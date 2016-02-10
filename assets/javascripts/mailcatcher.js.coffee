@@ -163,6 +163,10 @@ class MailCatcher
     message = message.id if message.id?
     $("""#messages tbody tr[data-message-id="#{message}"]""").length > 0
 
+  haveFolder: (message) ->
+    owner = message.owner if message.owner?
+    $(""".folders-wrapper ul li[data-owner="#{owner}"]""").length > 0
+
   selectedMessage: ->
     $("#messages tr.selected").data "message-id"
 
@@ -294,6 +298,14 @@ class MailCatcher
         unless @haveMessage message
           @addMessage message
       @updateMessagesCount()
+      @generateFolders(messages)
+
+  generateFolders: (messages) ->
+    foldersWrapper = $(".folders-wrapper ul")
+    $.each messages, (i, message) =>
+      unless @haveFolder message
+        owner = message.owner
+        foldersWrapper.append($("<li />").attr("data-owner", owner).text(owner))
 
   subscribe: ->
     if WebSocket?
@@ -315,8 +327,11 @@ class MailCatcher
   resizeToSavedKey: "mailcatcherSeparatorHeight"
 
   resizeTo: (height) ->
+    blockHeight = height - $(".wrapper").offset().top
+    $(".folders-wrapper").css
+      height: blockHeight
     $("#messages").css
-      height: height - $("#messages").offset().top
+      height: blockHeight + 14
     window.localStorage?.setItem(@resizeToSavedKey, height)
 
   resizeToSaved: ->
