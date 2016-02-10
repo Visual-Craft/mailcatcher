@@ -19,19 +19,33 @@
       </ul>
     </nav>
   </header>
-  <nav id="messages">
-    <table>
-      <thead>
-        <tr>
-          <th>From</th>
-          <th>To</th>
-          <th>Subject</th>
-          <th>Received</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </nav>
+  <table class="wrapper">
+    <tr>
+      <td class="folders">
+        <div class="folders-wrapper">
+          <ul>
+            <li data-owner="all">All</li>
+            <li data-owner="no-owner">No owner</li>
+          </ul>
+        </div>
+      </td>
+      <td class="emails">
+        <nav id="messages">
+          <table>
+            <thead>
+            <tr>
+              <th>From</th>
+              <th>To</th>
+              <th>Subject</th>
+              <th>Received</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </nav>
+      </td>
+    </tr>
+  </table>
   <div id="resizer"><div class="ruler"></div></div>
   <article id="message">
     <header>
