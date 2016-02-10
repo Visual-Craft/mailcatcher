@@ -26,6 +26,10 @@ class MailCatcher
       e.preventDefault()
       @loadMessageBody @selectedMessage(), $($(e.currentTarget).parent("li")).data("message-format")
 
+    $("#message .views .delete a").live "click", (e) =>
+      e.preventDefault()
+      @deleteSelectedMessage()
+
     $("#message iframe").load =>
       @decorateMessageBody()
 
@@ -96,24 +100,8 @@ class MailCatcher
       @openTab @nextTab()
       false
 
-    key "backspace, delete", =>
-      id = @selectedMessage()
-      if id?
-        $.ajax
-          url: "/messages/" + id
-          type: "DELETE"
-          success: =>
-            messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
-            switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
-            messageRow.remove()
-            if switchTo
-              @loadMessage switchTo
-            else
-              @unselectMessage()
-            @updateMessagesCount()
-
-          error: ->
-            alert "Error while removing message."
+    key "delete", =>
+      @deleteSelectedMessage()
       false
 
     @refresh()
@@ -251,6 +239,27 @@ class MailCatcher
         $("#message .views .download a").attr("href", "/messages/#{id}.eml")
 
         @loadMessageBody()
+
+  deleteSelectedMessage: () ->
+    id = @selectedMessage()
+    if id?
+      return if not confirm("Are you sure?")
+
+      $.ajax
+        url: "/messages/" + id
+        type: "DELETE"
+        success: =>
+          messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
+          switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
+          messageRow.remove()
+          if switchTo
+            @loadMessage switchTo
+          else
+            @unselectMessage()
+          @updateMessagesCount()
+
+        error: ->
+          alert "Error while removing message."
 
   # XXX: These should probably cache their iframes for the current message now we're using a remote service:
 
