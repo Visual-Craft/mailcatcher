@@ -100,6 +100,10 @@ module MailCatcher extend self
           options[:quit] = false
         end
 
+        parser.on("--database PATH", "Set emails database path") do |path|
+          Mail.database_path = path
+        end
+
         if mac?
           parser.on("--[no-]growl") do |growl|
             puts "Growl is no longer supported"
