@@ -104,6 +104,11 @@ module MailCatcher extend self
           Mail.database_path = path
         end
 
+        parser.on('-p PASS', '--password PASS', 'Set password for SMTP authentication') do |password|
+          options[:password] = password
+          Smtp.parms = { :auth => :required }
+        end
+
         if mac?
           parser.on("--[no-]growl") do |growl|
             puts "Growl is no longer supported"

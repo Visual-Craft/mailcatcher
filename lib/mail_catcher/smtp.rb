@@ -42,6 +42,14 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     true
   end
 
+  def receive_plain_auth user, password
+    if MailCatcher.options[:password].nil?
+      true
+    else
+      MailCatcher.options[:password] === password
+    end
+  end
+
   def receive_message
     MailCatcher::Mail.add_message current_message
     puts "==> SMTP: Received message from '#{current_message[:sender]}' (#{current_message[:source].length} bytes)"
