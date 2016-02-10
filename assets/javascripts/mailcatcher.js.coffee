@@ -100,7 +100,7 @@ class MailCatcher
       @openTab @nextTab()
       false
 
-    key "backspace, delete", =>
+    key "delete", =>
       @deleteSelectedMessage()
       false
 
