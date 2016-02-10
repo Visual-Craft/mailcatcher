@@ -33,6 +33,14 @@ OptionParser.new do |parser|
     options[:from] = from
   end
 
+  parser.on('-u USER', 'Set user for authentication') do |user|
+    options[:user] = user
+  end
+
+  parser.on('-p PASS', 'Set password for authentication') do |password|
+    options[:password] = password
+  end
+
   parser.on('-oi', 'Ignored option -oi') do |ignored|
   end
   parser.on('-t', 'Ignored option -t') do |ignored|
@@ -53,7 +61,9 @@ end.parse!
 Mail.defaults do
   delivery_method :smtp,
     :address => options[:smtp_ip],
-    :port => options[:smtp_port]
+    :port => options[:smtp_port],
+    :user_name => options[:user],
+    :password => options[:password]
 end
 
 message = Mail.new($stdin.read)
