@@ -4,11 +4,15 @@ require "mail"
 require "sqlite3"
 
 module MailCatcher::Mail extend self
+  def database_path=(val)
+    @database_path = val
+  end
+
   def db
     @__db ||= begin
-      SQLite3::Database.new(":memory:", :type_translation => true).tap do |db|
+      SQLite3::Database.new(@database_path || ":memory:", :type_translation => true).tap do |db|
         db.execute(<<-SQL)
-          CREATE TABLE message (
+          CREATE TABLE IF NOT EXISTS message (
             id INTEGER PRIMARY KEY ASC,
             sender TEXT,
             recipients TEXT,
@@ -20,7 +24,7 @@ module MailCatcher::Mail extend self
           )
         SQL
         db.execute(<<-SQL)
-          CREATE TABLE message_part (
+          CREATE TABLE IF NOT EXISTS message_part (
             id INTEGER PRIMARY KEY ASC,
             message_id INTEGER NOT NULL,
             cid TEXT,
