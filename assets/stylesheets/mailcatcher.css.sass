@@ -103,41 +103,71 @@ body > header
           text-decoration: none
           +text-shadow(-1px -1px 0 #eee)
 
-#messages
+.wrapper
   width: 100%
-  height: 10em
-  // Two rows with padding:
-  min-height: (2 * (1em + .5em))
-  overflow: auto
   background: #fff
-  border-top: 1px solid #fff
-  table
-    +clearfix
-    width: 100%
-    thead tr
-      background: #eee
-      color: #333
-      th
-        padding: .25em
-        font-weight: bold
-        color: #666
-        +text-shadow(0 1px 0 white)
-    tbody tr
-      cursor: pointer
-      +transition(0.1s ease)
-      color: #333
-      &:hover
-        color: #000
-      &:nth-child(even)
-        background: #f0f0f0
-      &.selected
-        background: Highlight
-        color: HighlightText
-      td
-        padding: .25em
-        &.blank
-          color: #666
-          font-style: italic
+  td
+    box-sizing: border-box
+  .folders
+    width: 15%
+    border-right: 1px solid #CCC
+    vertical-align: top
+    .folders-wrapper
+      padding: 7px 0
+      overflow-y: scroll
+      ul
+        li
+          cursor: pointer
+          background: url(/assets/folder.png) 7px center no-repeat
+          background-size: 6%
+          height: 18px
+          line-height: 18px
+          padding-left: 30px
+          text-decoration: none
+          color: #333
+          white-space: nowrap
+          overflow: hidden
+          text-overflow: ellipsis
+          &:hover
+            background: url(/assets/folder.png) 7px center no-repeat #f0f0f0
+            background-size: 6%
+
+  .emails
+    width: 85%
+    vertical-align: top
+    #messages
+      width: 100%
+      // Two rows with padding:
+      min-height: (2 * (1em + .5em))
+      overflow-y: scroll
+      border-top: 1px solid #fff
+      table
+        +clearfix
+        width: 100%
+        thead tr
+          background: #eee
+          color: #333
+          th
+            padding: .25em
+            font-weight: bold
+            color: #666
+            +text-shadow(0 1px 0 white)
+        tbody tr
+          cursor: pointer
+          +transition(0.1s ease)
+          color: #333
+          &:hover
+            color: #000
+          &:nth-child(even)
+            background: #f0f0f0
+          &.selected
+            background: Highlight
+            color: HighlightText
+          td
+            padding: .25em
+            &.blank
+              color: #666
+              font-style: italic
 #resizer
   padding-bottom: 5px
   cursor: ns-resize
