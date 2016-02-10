@@ -26,6 +26,10 @@ class MailCatcher
       e.preventDefault()
       @loadMessageBody @selectedMessage(), $($(e.currentTarget).parent("li")).data("message-format")
 
+    $("#message .views .delete a").live "click", (e) =>
+      e.preventDefault()
+      @deleteSelectedMessage()
+
     $("#message iframe").load =>
       @decorateMessageBody()
 
