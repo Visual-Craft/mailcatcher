@@ -82,7 +82,8 @@ module MailCatcher
                 timer.cancel
                 Events::MessageAdded.unsubscribe subscription
               end
-            end)
+            end
+          )
         else
           status 400
         end
