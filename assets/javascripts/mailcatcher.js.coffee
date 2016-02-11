@@ -184,14 +184,6 @@ class MailCatcher
     else
       @nextTab(i + 1)
 
-  haveMessage: (message) ->
-    message = message.id if message.id?
-    $("""#messages tbody tr[data-message-id="#{message}"]""").length > 0
-
-  haveFolder: (message) ->
-    owner = message.owner if message.owner?
-    $(""".folders-wrapper ul li[data-owner="#{owner}"]""").length > 0
-
   selectedMessage: ->
     $("#messages tr.selected").data "message-id"
 
@@ -203,9 +195,6 @@ class MailCatcher
 
   clearSearch: ->
     $("#messages tbody tr").show()
-
-  clearMessages: ->
-    $("#messages tbody").empty()
 
   addMessage: (message) ->
     $("<tr />").attr("data-message-id", message.id.toString())
@@ -328,7 +317,7 @@ class MailCatcher
       @updateMessagesCount()
 
   displayMessages: ->
-    @clearMessages()
+    $("#messages tbody").empty()
     foldersWrapper = $(".folders-wrapper ul")
     foldersWrapper.empty()
 
