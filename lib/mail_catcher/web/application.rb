@@ -65,7 +65,16 @@ module MailCatcher
           request.websocket!(
             :on_start => proc do |websocket|
               subscription = Events::MessageAdded.subscribe { |message| websocket.send_message message.to_json }
+
+              # send ping responses to correctly work with forward proxies
+              # which may close inactive connections after timeout
+              # for example nginx by default closes connection after 60 seconds of inactivity
+              timer = EventMachine::PeriodicTimer.new(30) do
+                websocket.send_message('{}')
+              end
+
               websocket.on_close do |websocket|
+                timer.cancel
                 Events::MessageAdded.unsubscribe subscription
               end
             end)
