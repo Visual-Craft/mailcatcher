@@ -76,6 +76,8 @@ class MailCatcher
     $(".folders ul li").live('click', (e) =>
       $element = $(e.target)
 
+      return if $element.is('.selected')
+
       if $element.data('all-owners')
         @allOwners = true
         @selectedOwner = null
@@ -335,12 +337,13 @@ class MailCatcher
         @addMessage(message)
     )
 
+    folderTemplate = $('<li class="noselect" />')
     foldersWrapper
-      .append($("<li />").attr('data-all-owners', 'true').text('All'))
-      .append($("<li />").attr('data-no-owner', 'true').text('No owner'))
+      .append(folderTemplate.clone().attr('data-all-owners', 'true').text('All'))
+      .append(folderTemplate.clone().attr('data-no-owner', 'true').text('No owner'))
 
     $.each(@owners, (owner) =>
-      foldersWrapper.append($("<li />").attr("data-owner", owner).text(owner))
+      foldersWrapper.append(folderTemplate.clone().attr("data-owner", owner).text(owner))
     )
 
     if @allOwners
