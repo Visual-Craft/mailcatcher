@@ -14,6 +14,7 @@ module MailCatcher::Mail extend self
         db.execute(<<-SQL)
           CREATE TABLE IF NOT EXISTS message (
             id INTEGER PRIMARY KEY ASC,
+            owner TEXT DEFAULT NULL,
             sender TEXT,
             recipients TEXT,
             subject TEXT,
@@ -42,10 +43,18 @@ module MailCatcher::Mail extend self
   end
 
   def add_message(message)
-    @add_message_query ||= db.prepare("INSERT INTO message (sender, recipients, subject, source, type, size, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
+    @add_message_query ||= db.prepare("INSERT INTO message (owner, sender, recipients, subject, source, type, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))")
 
     mail = Mail.new(message[:source])
-    @add_message_query.execute(message[:sender], message[:recipients].to_json, mail.subject, message[:source], mail.mime_type || "text/plain", message[:source].length)
+    @add_message_query.execute(
+        message[:owner],
+        message[:sender],
+        message[:recipients].to_json,
+        mail.subject,
+        message[:source],
+        mail.mime_type || "text/plain",
+        message[:source].length
+    )
     message_id = db.last_insert_row_id
     parts = mail.all_parts
     parts = [mail] if parts.empty?
@@ -73,7 +82,7 @@ module MailCatcher::Mail extend self
   end
 
   def messages
-    @messages_query ||= db.prepare "SELECT id, sender, recipients, subject, size, created_at FROM message ORDER BY created_at, id ASC"
+    @messages_query ||= db.prepare "SELECT id, owner, sender, recipients, subject, size, created_at FROM message ORDER BY created_at, id ASC"
     @messages_query.execute.map do |row|
       Hash[row.fields.zip(row)].tap do |message|
         message["recipients"] &&= ActiveSupport::JSON.decode message["recipients"]
