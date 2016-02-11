@@ -353,10 +353,14 @@ class MailCatcher
   subscribeWebSocket: ->
     secure = window.location.protocol is "https:"
     protocol = if secure then "wss" else "ws"
-    @websocket = new WebSocket("#{protocol}://#{window.location.host}/messages")
+    @websocket = new WebSocket("#{protocol}://#{window.location.host}/ws/messages")
     @websocket.onmessage = (event) =>
-      @addMessageData($.parseJSON(event.data))
-      @displayMessages()
+      data = $.parseJSON(event.data)
+
+      # handle ping, which just returns empty object
+      if not $.isEmptyObject(data)
+        @addMessageData(data)
+        @displayMessages()
 
   subscribePoll: ->
     unless @refreshInterval?
