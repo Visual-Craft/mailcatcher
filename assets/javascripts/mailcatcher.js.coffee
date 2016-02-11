@@ -11,6 +11,11 @@ jQuery.expr[":"].icontains = (a, i, m) ->
 
 class MailCatcher
   constructor: ->
+    @messages = {}
+    @owners = {}
+    @selectedOwner = null
+    @allOwners = true
+
     $("#messages tr").live "click", (e) =>
       e.preventDefault()
       @loadMessage $(e.currentTarget).attr("data-message-id")
@@ -67,6 +72,26 @@ class MailCatcher
             location.replace $("body > header h1 a").attr("href")
           error: ->
             alert "Error while quitting."
+
+    $(".folders ul li").live('click', (e) =>
+      $element = $(e.target)
+      $(".folders ul li").removeClass('selected')
+      $element.addClass('selected')
+
+      if $element.data('all-owners')
+        @allOwners = true
+        @selectedOwner = null
+      else if $element.data('no-owner')
+        @allOwners = false
+        @selectedOwner = null
+      else if $element.data('owner')
+        @allOwners = false
+        @selectedOwner = $element.data('owner')
+      else
+        return
+
+      @displayMessages()
+    ).filter('[data-all-owners]').addClass('selected').end()
 
     @favcount = new Favcount($("""link[rel="icon"]""").attr("href"))
 
@@ -178,6 +203,9 @@ class MailCatcher
 
   clearSearch: ->
     $("#messages tbody tr").show()
+
+  clearMessages: ->
+    $("#messages tbody").empty()
 
   addMessage: (message) ->
     $("<tr />").attr("data-message-id", message.id.toString())
@@ -295,17 +323,27 @@ class MailCatcher
   refresh: ->
     $.getJSON "/messages", (messages) =>
       $.each messages, (i, message) =>
-        unless @haveMessage message
-          @addMessage message
+        @addMessageData(message)
+      @displayMessages()
       @updateMessagesCount()
-      @generateFolders(messages)
 
-  generateFolders: (messages) ->
+  displayMessages: ->
+    @clearMessages()
     foldersWrapper = $(".folders-wrapper ul")
-    $.each messages, (i, message) =>
-      unless @haveFolder message
-        owner = message.owner
-        foldersWrapper.append($("<li />").attr("data-owner", owner).text(owner))
+    foldersWrapper.empty()
+
+    $.each(@messages, (i, message) =>
+      if @allOwners or message.owner == @selectedOwner
+        @addMessage(message)
+    )
+
+    foldersWrapper
+      .append($("<li />").attr('data-all-owners', 'true').text('All'))
+      .append($("<li />").attr('data-no-owner', 'true').text('No owner'))
+
+    $.each(@owners, (owner) =>
+      foldersWrapper.append($("<li />").attr("data-owner", owner).text(owner))
+    )
 
   subscribe: ->
     if WebSocket?
@@ -318,7 +356,8 @@ class MailCatcher
     protocol = if secure then "wss" else "ws"
     @websocket = new WebSocket("#{protocol}://#{window.location.host}/messages")
     @websocket.onmessage = (event) =>
-      @addMessage $.parseJSON event.data
+      @addMessageData($.parseJSON(event.data))
+      @displayMessages()
 
   subscribePoll: ->
     unless @refreshInterval?
@@ -338,5 +377,11 @@ class MailCatcher
     height = parseInt(window.localStorage?.getItem(@resizeToSavedKey))
     unless isNaN height
       @resizeTo height
+
+  addMessageData: (message) ->
+    @messages[message.id] = message
+
+    if message.owner
+      @owners[message.owner] = true
 
 $ -> window.MailCatcher = new MailCatcher
