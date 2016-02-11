@@ -42,7 +42,7 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     true
   end
 
-  def receive_plain_auth user, password
+  def receive_plain_auth(user, password)
     current_message[:owner] = user
 
     if MailCatcher.options[:password].nil?
