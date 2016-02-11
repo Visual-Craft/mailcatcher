@@ -61,6 +61,11 @@ module MailCatcher
       end
 
       get "/messages" do
+        content_type :json
+        Mail.messages.to_json
+      end
+
+      get "/ws/messages" do
         if request.websocket?
           request.websocket!(
             :on_start => proc do |websocket|
@@ -79,8 +84,7 @@ module MailCatcher
               end
             end)
         else
-          content_type :json
-          Mail.messages.to_json
+          status 400
         end
       end
 
