@@ -75,8 +75,6 @@ class MailCatcher
 
     $(".folders ul li").live('click', (e) =>
       $element = $(e.target)
-      $(".folders ul li").removeClass('selected')
-      $element.addClass('selected')
 
       if $element.data('all-owners')
         @allOwners = true
@@ -91,7 +89,7 @@ class MailCatcher
         return
 
       @displayMessages()
-    ).filter('[data-all-owners]').addClass('selected').end()
+    )
 
     @favcount = new Favcount($("""link[rel="icon"]""").attr("href"))
 
@@ -344,6 +342,15 @@ class MailCatcher
     $.each(@owners, (owner) =>
       foldersWrapper.append($("<li />").attr("data-owner", owner).text(owner))
     )
+
+    if @allOwners
+      filter = '[data-all-owners]'
+    else if @selectedOwner == null
+      filter = '[data-no-owner]'
+    else
+      filter = "[data-owner='#{@selectedOwner}']"
+
+    foldersWrapper.find("li#{filter}").addClass('selected')
 
   subscribe: ->
     if WebSocket?
