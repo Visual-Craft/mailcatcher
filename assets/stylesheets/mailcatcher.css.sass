@@ -1,6 +1,14 @@
 @import "compass"
 @import "compass/reset"
 
+.noselect
+  -webkit-touch-callout: none
+  -webkit-user-select: none
+  -khtml-user-select: none
+  -moz-user-select: none
+  -ms-user-select: none
+  user-select: none
+
 html, body
   width: 100%
   height: 100%
@@ -103,41 +111,79 @@ body > header
           text-decoration: none
           +text-shadow(-1px -1px 0 #eee)
 
-#messages
+.wrapper
   width: 100%
-  height: 10em
-  // Two rows with padding:
-  min-height: (2 * (1em + .5em))
-  overflow: auto
   background: #fff
-  border-top: 1px solid #fff
-  table
-    +clearfix
-    width: 100%
-    thead tr
-      background: #eee
-      color: #333
-      th
-        padding: .25em
-        font-weight: bold
-        color: #666
-        +text-shadow(0 1px 0 white)
-    tbody tr
-      cursor: pointer
-      +transition(0.1s ease)
-      color: #333
-      &:hover
-        color: #000
-      &:nth-child(even)
-        background: #f0f0f0
-      &.selected
-        background: Highlight
-        color: HighlightText
-      td
-        padding: .25em
-        &.blank
-          color: #666
-          font-style: italic
+  td
+    box-sizing: border-box
+  .folders
+    width: 15%
+    border-right: 1px solid #CCC
+    vertical-align: top
+    .folders-wrapper
+      padding: 7px 0
+      overflow-y: scroll
+      ul
+        li
+          cursor: pointer
+          background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAASCAYAAABB7B6eAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjE1MkEyNjc1Q0ZGMzExRTU5MEU2OUM3Qzk0OUM3NjBDIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjE1MkEyNjc2Q0ZGMzExRTU5MEU2OUM3Qzk0OUM3NjBDIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MTUyQTI2NzNDRkYzMTFFNTkwRTY5QzdDOTQ5Qzc2MEMiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MTUyQTI2NzRDRkYzMTFFNTkwRTY5QzdDOTQ5Qzc2MEMiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4bTvHvAAAAYElEQVR42mIMDQ3dycDAoM2AG3wG4hAgvspABmABYjci1J0E4ngg/kCi+X9ZoC7kJaCQG4jXkOMDJgbagh+0tuA3rS1gGLVg1IJRC4aLBbw0NJ8XVFyfBmINGllwByDAAAnhDRdKhxBJAAAAAElFTkSuQmCC') 7px center no-repeat
+          background-size: 6%
+          height: 18px
+          line-height: 18px
+          padding-left: 30px
+          text-decoration: none
+          color: #333
+          white-space: nowrap
+          overflow: hidden
+          text-overflow: ellipsis
+          &.selected
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAASCAYAAABB7B6eAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjE1MkEyNjc1Q0ZGMzExRTU5MEU2OUM3Qzk0OUM3NjBDIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjE1MkEyNjc2Q0ZGMzExRTU5MEU2OUM3Qzk0OUM3NjBDIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MTUyQTI2NzNDRkYzMTFFNTkwRTY5QzdDOTQ5Qzc2MEMiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MTUyQTI2NzRDRkYzMTFFNTkwRTY5QzdDOTQ5Qzc2MEMiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4bTvHvAAAAYElEQVR42mIMDQ3dycDAoM2AG3wG4hAgvspABmABYjci1J0E4ngg/kCi+X9ZoC7kJaCQG4jXkOMDJgbagh+0tuA3rS1gGLVg1IJRC4aLBbw0NJ8XVFyfBmINGllwByDAAAnhDRdKhxBJAAAAAElFTkSuQmCC') 7px center no-repeat Highlight
+            background-size: 6%
+            color: HighlightText
+            &:hover
+              background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAASCAYAAABB7B6eAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjE1MkEyNjc1Q0ZGMzExRTU5MEU2OUM3Qzk0OUM3NjBDIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjE1MkEyNjc2Q0ZGMzExRTU5MEU2OUM3Qzk0OUM3NjBDIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MTUyQTI2NzNDRkYzMTFFNTkwRTY5QzdDOTQ5Qzc2MEMiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MTUyQTI2NzRDRkYzMTFFNTkwRTY5QzdDOTQ5Qzc2MEMiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4bTvHvAAAAYElEQVR42mIMDQ3dycDAoM2AG3wG4hAgvspABmABYjci1J0E4ngg/kCi+X9ZoC7kJaCQG4jXkOMDJgbagh+0tuA3rS1gGLVg1IJRC4aLBbw0NJ8XVFyfBmINGllwByDAAAnhDRdKhxBJAAAAAElFTkSuQmCC') 7px center no-repeat Highlight
+              background-size: 6%
+              color: HighlightText
+          &:hover
+            background-color: #f0f0f0
+            background-size: 6%
+
+  .emails
+    width: 85%
+    vertical-align: top
+    #messages
+      width: 100%
+      // Two rows with padding:
+      min-height: (2 * (1em + .5em))
+      overflow-y: scroll
+      border-top: 1px solid #fff
+      table
+        +clearfix
+        width: 100%
+        thead tr
+          background: #eee
+          color: #333
+          th
+            padding: .25em
+            font-weight: bold
+            color: #666
+            +text-shadow(0 1px 0 white)
+        tbody tr
+          cursor: pointer
+          +transition(0.1s ease)
+          color: #333
+          &:hover
+            color: #000
+          &:nth-child(even)
+            background: #f0f0f0
+          &.selected
+            background: Highlight
+            color: HighlightText
+          td
+            padding: .25em
+            &.blank
+              color: #666
+              font-style: italic
 #resizer
   padding-bottom: 5px
   cursor: ns-resize
