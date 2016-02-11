@@ -1,17 +1,17 @@
-FROM ubuntu:trusty
-MAINTAINER Paul Bowsher <paul.bowsher@gmail.com>
+FROM alpine:3.3
+MAINTAINER Anton Bakai <me@inso.im>
 
-RUN apt-get update && apt-get install -y -q \
-    build-essential \
-    git \
-    libssl-dev \
-    libsqlite3-dev \
-    nodejs \
+RUN apk update -q && apk add -q \
+    build-base \
+    sqlite-dev \
+    libffi-dev \
+    ruby \
     ruby-dev \
-    sqlite3 \
- && apt-get clean \
- && rm -r /var/lib/apt/lists/* \
- && gem install bundler --no-ri --no-rdoc
+    ruby-bigdecimal \
+    ruby-io-console \
+    nodejs \
+ && rm -f /var/cache/apk/*
+RUN gem install bundler --no-ri --no-rdoc
 
 ADD . /app
 WORKDIR /app
