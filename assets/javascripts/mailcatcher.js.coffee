@@ -338,12 +338,15 @@ class MailCatcher
     )
 
     folderTemplate = $('<li class="noselect" />')
+    clearTemplate = $('<span class="clear-folder" />')
+    clearText = 'Clear'
+
     foldersWrapper
-      .append(folderTemplate.clone().attr('data-all-owners', 'true').text('All'))
-      .append(folderTemplate.clone().attr('data-no-owner', 'true').text('No owner'))
+      .append(folderTemplate.clone().attr('data-all-owners', 'true').text('All').append(clearTemplate.clone().text(clearText)))
+      .append(folderTemplate.clone().attr('data-no-owner', 'true').text('No owner').append(clearTemplate.clone().text(clearText)))
 
     $.each(@owners, (owner) =>
-      foldersWrapper.append(folderTemplate.clone().attr("data-owner", owner).text(owner))
+      foldersWrapper.append(folderTemplate.clone().attr("data-owner", owner).text(owner).append(clearTemplate.clone().text(clearText)))
     )
 
     if @allOwners
