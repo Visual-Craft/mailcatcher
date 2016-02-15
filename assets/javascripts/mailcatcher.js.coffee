@@ -58,7 +58,7 @@ class MailCatcher
           success: =>
             @reset()
             @unselectMessage()
-            @updateMessagesCount()
+            @displayMessages()
           error: ->
             alert "Error while clearing all messages."
 
@@ -275,14 +275,19 @@ class MailCatcher
         url: "/messages/" + id
         type: "DELETE"
         success: =>
-          messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
-          switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
-          messageRow.remove()
+          @unselectMessage()
+          idx = @getMessageIndex(id)
+          switchTo = null
+
+          if idx != -1
+            messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
+            switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
+            @messages.splice(idx, 1)
+
+          @displayMessages()
+
           if switchTo
-            @loadMessage switchTo
-          else
-            @unselectMessage()
-          @updateMessagesCount()
+            @loadMessage(switchTo)
 
         error: ->
           alert "Error while removing message."
