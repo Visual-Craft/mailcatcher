@@ -212,7 +212,7 @@ class MailCatcher
         $("#messages").scrollTop($("#messages").scrollTop() + overflow + 20)
 
   unselectMessage: ->
-    $("#messages tbody, #message .metadata dd").empty()
+    $("#message .metadata dd").empty()
     $("#message .metadata .attachments").hide()
     $("#message iframe").attr("src", "about:blank")
     null
