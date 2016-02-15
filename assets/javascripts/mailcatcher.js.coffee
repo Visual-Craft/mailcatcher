@@ -4,6 +4,7 @@
 #= require favcount
 #= require flexie
 #= require keymaster
+#= require underscore
 
 # Add a new jQuery selector expression which does a case-insensitive :contains
 jQuery.expr[":"].icontains = (a, i, m) ->
@@ -11,10 +12,7 @@ jQuery.expr[":"].icontains = (a, i, m) ->
 
 class MailCatcher
   constructor: ->
-    @messages = {}
-    @owners = {}
-    @selectedOwner = null
-    @allOwners = true
+    @reset()
 
     $("#messages tr").live "click", (e) =>
       e.preventDefault()
@@ -58,8 +56,9 @@ class MailCatcher
           url: "/messages"
           type: "DELETE"
           success: =>
+            @reset()
             @unselectMessage()
-            @updateMessagesCount()
+            @displayMessages()
           error: ->
             alert "Error while clearing all messages."
 
@@ -132,6 +131,12 @@ class MailCatcher
     @refresh()
     @subscribe()
 
+  reset: () ->
+    @messages = []
+    @owners = {}
+    @selectedOwner = null
+    @allOwners = true
+
   # Only here because Safari's Date parsing *sucks*
   # We throw away the timezone, but you could use it for something...
   parseDateRegexp: /^(\d{4})[-\/\\](\d{2})[-\/\\](\d{2})(?:\s+|T)(\d{2})[:-](\d{2})[:-](\d{2})(?:([ +-]\d{2}:\d{2}|\s*\S+|Z?))?$/
@@ -148,13 +153,6 @@ class MailCatcher
     date &&= @parseDate(date) if typeof(date) == "string"
     date &&= @offsetTimeZone(date)
     date &&= date.toString("dddd, d MMM yyyy h:mm:ss tt")
-
-  messagesCount: ->
-    $("#messages tr").length - 1
-
-  updateMessagesCount: ->
-    @favcount.set(@messagesCount())
-    document.title = 'MailCatcher (' + @messagesCount() + ')'
 
   tabs: ->
     $("#message ul").children(".tab")
@@ -203,7 +201,6 @@ class MailCatcher
       .append($("<td/>").text(message.subject or "No subject").toggleClass("blank", !message.subject))
       .append($("<td/>").text(@formatDate(message.created_at)))
       .prependTo($("#messages tbody"))
-    @updateMessagesCount()
 
   scrollToRow: (row) ->
     relativePosition = row.offset().top - $("#messages").offset().top
@@ -215,7 +212,7 @@ class MailCatcher
         $("#messages").scrollTop($("#messages").scrollTop() + overflow + 20)
 
   unselectMessage: ->
-    $("#messages tbody, #message .metadata dd").empty()
+    $("#message .metadata dd").empty()
     $("#message .metadata .attachments").hide()
     $("#message iframe").attr("src", "about:blank")
     null
@@ -270,14 +267,19 @@ class MailCatcher
         url: "/messages/" + id
         type: "DELETE"
         success: =>
-          messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
-          switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
-          messageRow.remove()
+          @unselectMessage()
+          idx = @getMessageIndex(id)
+          switchTo = null
+
+          if idx != -1
+            messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
+            switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
+            @messages.splice(idx, 1)
+
+          @displayMessages()
+
           if switchTo
-            @loadMessage switchTo
-          else
-            @unselectMessage()
-          @updateMessagesCount()
+            @loadMessage(switchTo)
 
         error: ->
           alert "Error while removing message."
@@ -314,17 +316,21 @@ class MailCatcher
       $.each messages, (i, message) =>
         @addMessageData(message)
       @displayMessages()
-      @updateMessagesCount()
 
   displayMessages: ->
     $("#messages tbody").empty()
     foldersWrapper = $(".folders-wrapper ul")
     foldersWrapper.empty()
+    count = 0
 
     $.each(@messages, (i, message) =>
       if @allOwners or message.owner == @selectedOwner
         @addMessage(message)
+        count++
     )
+
+    @favcount.set(count)
+    document.title = "MailCatcher (#{count})"
 
     folderTemplate = $('<li class="noselect" />')
     foldersWrapper
@@ -382,9 +388,15 @@ class MailCatcher
       @resizeTo height
 
   addMessageData: (message) ->
-    @messages[message.id] = message
+    if (idx = @getMessageIndex(message.id)) != -1
+      @messages[idx] = message
+    else
+      @messages.push(message)
 
     if message.owner
       @owners[message.owner] = true
+
+  getMessageIndex: (id) ->
+    _.findIndex(@messages, (v) -> v.id == id)
 
 $ -> window.MailCatcher = new MailCatcher
