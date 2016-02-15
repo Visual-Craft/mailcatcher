@@ -184,6 +184,17 @@ module MailCatcher
         end
       end
 
+      post '/messages/:id/mark-readed' do
+        id = params[:id].to_i
+
+        if Mail.message(id)
+          Mail.mark_readed(id)
+          status 204
+        else
+          not_found
+        end
+      end
+
       delete "/messages/:id" do
         id = params[:id].to_i
         if message = Mail.message(id)

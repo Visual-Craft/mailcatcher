@@ -196,6 +196,7 @@ class MailCatcher
 
   addMessage: (message) ->
     $("<tr />").attr("data-message-id", message.id.toString())
+      .addClass(if message.new == 1 then 'new' else '')
       .append($("<td/>").text(message.sender or "No sender").toggleClass("blank", !message.sender))
       .append($("<td/>").text((message.recipients || []).join(", ") or "No receipients").toggleClass("blank", !message.recipients.length))
       .append($("<td/>").text(message.subject or "No subject").toggleClass("blank", !message.subject))
@@ -258,6 +259,7 @@ class MailCatcher
         $("#message .views .download a").attr("href", "/messages/#{id}.eml")
 
         @loadMessageBody()
+        @markMessageReaded(id)
 
   deleteSelectedMessage: () ->
     id = @selectedMessage()
@@ -403,5 +405,22 @@ class MailCatcher
 
   getMessageIndex: (id) ->
     _.findIndex(@messages, (v) -> v.id == id)
+
+  getMessage: (id) ->
+    _.find(@messages, (v) -> v.id == id)
+
+  markMessageReaded: (id) ->
+    message = @getMessage(id)
+
+    return unless message
+
+    row = $("""#messages tbody tr[data-message-id="#{id}"]""")
+
+    return unless row.hasClass('new')
+
+    $.post("/messages/#{id}/mark-readed", {}, () =>
+      row.removeClass('new')
+      message.new = 0
+    )
 
 $ -> window.MailCatcher = new MailCatcher

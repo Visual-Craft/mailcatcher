@@ -21,6 +21,7 @@ module MailCatcher::Mail extend self
             source BLOB,
             size TEXT,
             type TEXT,
+            new INTEGER,
             created_at DATETIME DEFAULT CURRENT_DATETIME
           )
         SQL
@@ -43,7 +44,7 @@ module MailCatcher::Mail extend self
   end
 
   def add_message(message)
-    @add_message_query ||= db.prepare("INSERT INTO message (owner, sender, recipients, subject, source, type, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))")
+    @add_message_query ||= db.prepare("INSERT INTO message (owner, sender, recipients, subject, source, type, size, new, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))")
 
     mail = Mail.new(message[:source])
     @add_message_query.execute(
@@ -53,7 +54,8 @@ module MailCatcher::Mail extend self
         mail.subject,
         message[:source],
         mail.mime_type || "text/plain",
-        message[:source].length
+        message[:source].length,
+        1
     )
     message_id = db.last_insert_row_id
     parts = mail.all_parts
@@ -82,7 +84,7 @@ module MailCatcher::Mail extend self
   end
 
   def messages
-    @messages_query ||= db.prepare "SELECT id, owner, sender, recipients, subject, size, created_at FROM message ORDER BY created_at, id ASC"
+    @messages_query ||= db.prepare "SELECT id, owner, sender, recipients, subject, size, new, created_at FROM message ORDER BY created_at, id ASC"
     @messages_query.execute.map do |row|
       Hash[row.fields.zip(row)].tap do |message|
         message["recipients"] &&= ActiveSupport::JSON.decode message["recipients"]
@@ -169,5 +171,10 @@ module MailCatcher::Mail extend self
     @delete_message_parts_query ||= db.prepare "DELETE FROM message_part WHERE message_id = ?"
     @delete_messages_query.execute(message_id) and
     @delete_message_parts_query.execute(message_id)
+  end
+
+  def mark_readed(id)
+    @mark_readed_query ||= db.prepare 'UPDATE message SET new = 0 WHERE id = ? LIMIT 1'
+    @mark_readed_query.execute(id)
   end
 end
