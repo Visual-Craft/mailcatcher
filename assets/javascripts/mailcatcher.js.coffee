@@ -154,13 +154,6 @@ class MailCatcher
     date &&= @offsetTimeZone(date)
     date &&= date.toString("dddd, d MMM yyyy h:mm:ss tt")
 
-  messagesCount: ->
-    $("#messages tr").length - 1
-
-  updateMessagesCount: ->
-    @favcount.set(@messagesCount())
-    document.title = 'MailCatcher (' + @messagesCount() + ')'
-
   tabs: ->
     $("#message ul").children(".tab")
 
@@ -208,7 +201,6 @@ class MailCatcher
       .append($("<td/>").text(message.subject or "No subject").toggleClass("blank", !message.subject))
       .append($("<td/>").text(@formatDate(message.created_at)))
       .prependTo($("#messages tbody"))
-    @updateMessagesCount()
 
   scrollToRow: (row) ->
     relativePosition = row.offset().top - $("#messages").offset().top
@@ -324,17 +316,21 @@ class MailCatcher
       $.each messages, (i, message) =>
         @addMessageData(message)
       @displayMessages()
-      @updateMessagesCount()
 
   displayMessages: ->
     $("#messages tbody").empty()
     foldersWrapper = $(".folders-wrapper ul")
     foldersWrapper.empty()
+    count = 0
 
     $.each(@messages, (i, message) =>
       if @allOwners or message.owner == @selectedOwner
         @addMessage(message)
+        count++
     )
+
+    @favcount.set(count)
+    document.title = "MailCatcher (#{count})"
 
     folderTemplate = $('<li class="noselect" />')
     foldersWrapper
