@@ -11,10 +11,7 @@ jQuery.expr[":"].icontains = (a, i, m) ->
 
 class MailCatcher
   constructor: ->
-    @messages = {}
-    @owners = {}
-    @selectedOwner = null
-    @allOwners = true
+    @reset()
 
     $("#messages tr").live "click", (e) =>
       e.preventDefault()
@@ -58,6 +55,7 @@ class MailCatcher
           url: "/messages"
           type: "DELETE"
           success: =>
+            @reset()
             @unselectMessage()
             @updateMessagesCount()
           error: ->
@@ -131,6 +129,12 @@ class MailCatcher
 
     @refresh()
     @subscribe()
+
+  reset: () ->
+    @messages = {}
+    @owners = {}
+    @selectedOwner = null
+    @allOwners = true
 
   # Only here because Safari's Date parsing *sucks*
   # We throw away the timezone, but you could use it for something...
