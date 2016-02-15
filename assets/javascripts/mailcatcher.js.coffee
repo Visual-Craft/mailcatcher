@@ -369,6 +369,10 @@ class MailCatcher
         @addMessageData(data)
         @displayMessages()
 
+    $(window).bind('beforeunload', () =>
+      @websocket.close() if @websocket
+    )
+
   subscribePoll: ->
     unless @refreshInterval?
       @refreshInterval = setInterval (=> @refresh()), 1000
