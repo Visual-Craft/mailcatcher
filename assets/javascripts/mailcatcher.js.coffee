@@ -132,7 +132,7 @@ class MailCatcher
     @subscribe()
 
   reset: () ->
-    @messages = {}
+    @messages = []
     @owners = {}
     @selectedOwner = null
     @allOwners = true
@@ -387,9 +387,15 @@ class MailCatcher
       @resizeTo height
 
   addMessageData: (message) ->
-    @messages[message.id] = message
+    if (idx = @getMessageIndex(message.id)) != -1
+      @messages[idx] = message
+    else
+      @messages.push(message)
 
     if message.owner
       @owners[message.owner] = true
+
+  getMessageIndex: (id) ->
+    _.findIndex(@messages, (v) -> v.id == id)
 
 $ -> window.MailCatcher = new MailCatcher
