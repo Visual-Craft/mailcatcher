@@ -220,8 +220,9 @@ class MailCatcher
   loadMessage: (id) ->
     id = id.id if id?.id?
     id ||= $("#messages tr.selected").attr "data-message-id"
+    id = parseInt(id)
 
-    if id?
+    if id? and not isNaN(id)
       $("#messages tbody tr:not([data-message-id='#{id}'])").removeClass("selected")
       messageRow = $("#messages tbody tr[data-message-id='#{id}']")
       messageRow.addClass("selected")
