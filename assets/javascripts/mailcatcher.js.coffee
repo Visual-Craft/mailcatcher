@@ -4,6 +4,7 @@
 #= require favcount
 #= require flexie
 #= require keymaster
+#= require underscore
 
 # Add a new jQuery selector expression which does a case-insensitive :contains
 jQuery.expr[":"].icontains = (a, i, m) ->
@@ -11,10 +12,7 @@ jQuery.expr[":"].icontains = (a, i, m) ->
 
 class MailCatcher
   constructor: ->
-    @messages = {}
-    @owners = {}
-    @selectedOwner = null
-    @allOwners = true
+    @reset()
 
     $("#messages tr").live "click", (e) =>
       e.preventDefault()
@@ -58,8 +56,9 @@ class MailCatcher
           url: "/messages"
           type: "DELETE"
           success: =>
+            @reset()
             @unselectMessage()
-            @updateMessagesCount()
+            @displayMessages()
           error: ->
             alert "Error while clearing all messages."
 
@@ -132,6 +131,12 @@ class MailCatcher
     @refresh()
     @subscribe()
 
+  reset: () ->
+    @messages = []
+    @owners = {}
+    @selectedOwner = null
+    @allOwners = true
+
   # Only here because Safari's Date parsing *sucks*
   # We throw away the timezone, but you could use it for something...
   parseDateRegexp: /^(\d{4})[-\/\\](\d{2})[-\/\\](\d{2})(?:\s+|T)(\d{2})[:-](\d{2})[:-](\d{2})(?:([ +-]\d{2}:\d{2}|\s*\S+|Z?))?$/
@@ -148,13 +153,6 @@ class MailCatcher
     date &&= @parseDate(date) if typeof(date) == "string"
     date &&= @offsetTimeZone(date)
     date &&= date.toString("dddd, d MMM yyyy h:mm:ss tt")
-
-  messagesCount: ->
-    $("#messages tr").length - 1
-
-  updateMessagesCount: ->
-    @favcount.set(@messagesCount())
-    document.title = 'MailCatcher (' + @messagesCount() + ')'
 
   tabs: ->
     $("#message ul").children(".tab")
@@ -184,14 +182,6 @@ class MailCatcher
     else
       @nextTab(i + 1)
 
-  haveMessage: (message) ->
-    message = message.id if message.id?
-    $("""#messages tbody tr[data-message-id="#{message}"]""").length > 0
-
-  haveFolder: (message) ->
-    owner = message.owner if message.owner?
-    $(""".folders-wrapper ul li[data-owner="#{owner}"]""").length > 0
-
   selectedMessage: ->
     $("#messages tr.selected").data "message-id"
 
@@ -204,17 +194,14 @@ class MailCatcher
   clearSearch: ->
     $("#messages tbody tr").show()
 
-  clearMessages: ->
-    $("#messages tbody").empty()
-
   addMessage: (message) ->
     $("<tr />").attr("data-message-id", message.id.toString())
+      .addClass(if message.new == 1 then 'new' else '')
       .append($("<td/>").text(message.sender or "No sender").toggleClass("blank", !message.sender))
       .append($("<td/>").text((message.recipients || []).join(", ") or "No receipients").toggleClass("blank", !message.recipients.length))
       .append($("<td/>").text(message.subject or "No subject").toggleClass("blank", !message.subject))
       .append($("<td/>").text(@formatDate(message.created_at)))
       .prependTo($("#messages tbody"))
-    @updateMessagesCount()
 
   scrollToRow: (row) ->
     relativePosition = row.offset().top - $("#messages").offset().top
@@ -226,7 +213,7 @@ class MailCatcher
         $("#messages").scrollTop($("#messages").scrollTop() + overflow + 20)
 
   unselectMessage: ->
-    $("#messages tbody, #message .metadata dd").empty()
+    $("#message .metadata dd").empty()
     $("#message .metadata .attachments").hide()
     $("#message iframe").attr("src", "about:blank")
     null
@@ -234,8 +221,9 @@ class MailCatcher
   loadMessage: (id) ->
     id = id.id if id?.id?
     id ||= $("#messages tr.selected").attr "data-message-id"
+    id = parseInt(id)
 
-    if id?
+    if id? and not isNaN(id)
       $("#messages tbody tr:not([data-message-id='#{id}'])").removeClass("selected")
       messageRow = $("#messages tbody tr[data-message-id='#{id}']")
       messageRow.addClass("selected")
@@ -271,6 +259,7 @@ class MailCatcher
         $("#message .views .download a").attr("href", "/messages/#{id}.eml")
 
         @loadMessageBody()
+        @markMessageReaded(id)
 
   deleteSelectedMessage: () ->
     id = @selectedMessage()
@@ -281,14 +270,19 @@ class MailCatcher
         url: "/messages/" + id
         type: "DELETE"
         success: =>
-          messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
-          switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
-          messageRow.remove()
+          @unselectMessage()
+          idx = @getMessageIndex(id)
+          switchTo = null
+
+          if idx != -1
+            messageRow = $("""#messages tbody tr[data-message-id="#{id}"]""")
+            switchTo = messageRow.next().data("message-id") || messageRow.prev().data("message-id")
+            @messages.splice(idx, 1)
+
+          @displayMessages()
+
           if switchTo
-            @loadMessage switchTo
-          else
-            @unselectMessage()
-          @updateMessagesCount()
+            @loadMessage(switchTo)
 
         error: ->
           alert "Error while removing message."
@@ -325,17 +319,21 @@ class MailCatcher
       $.each messages, (i, message) =>
         @addMessageData(message)
       @displayMessages()
-      @updateMessagesCount()
 
   displayMessages: ->
-    @clearMessages()
+    $("#messages tbody").empty()
     foldersWrapper = $(".folders-wrapper ul")
     foldersWrapper.empty()
+    count = 0
 
     $.each(@messages, (i, message) =>
       if @allOwners or message.owner == @selectedOwner
         @addMessage(message)
+        count++
     )
+
+    @favcount.set(count)
+    document.title = "MailCatcher (#{count})"
 
     folderTemplate = $('<li class="noselect" />')
     clearTemplate = $('<span class="clear-folder" />')
@@ -367,10 +365,18 @@ class MailCatcher
   subscribeWebSocket: ->
     secure = window.location.protocol is "https:"
     protocol = if secure then "wss" else "ws"
-    @websocket = new WebSocket("#{protocol}://#{window.location.host}/messages")
+    @websocket = new WebSocket("#{protocol}://#{window.location.host}/ws/messages")
     @websocket.onmessage = (event) =>
-      @addMessageData($.parseJSON(event.data))
-      @displayMessages()
+      data = $.parseJSON(event.data)
+
+      # handle ping, which just returns empty object
+      if not $.isEmptyObject(data)
+        @addMessageData(data)
+        @displayMessages()
+
+    $(window).bind('beforeunload', () =>
+      @websocket.close() if @websocket
+    )
 
   subscribePoll: ->
     unless @refreshInterval?
@@ -392,9 +398,32 @@ class MailCatcher
       @resizeTo height
 
   addMessageData: (message) ->
-    @messages[message.id] = message
+    if (idx = @getMessageIndex(message.id)) != -1
+      @messages[idx] = message
+    else
+      @messages.push(message)
 
     if message.owner
       @owners[message.owner] = true
+
+  getMessageIndex: (id) ->
+    _.findIndex(@messages, (v) -> v.id == id)
+
+  getMessage: (id) ->
+    _.find(@messages, (v) -> v.id == id)
+
+  markMessageReaded: (id) ->
+    message = @getMessage(id)
+
+    return unless message
+
+    row = $("""#messages tbody tr[data-message-id="#{id}"]""")
+
+    return unless row.hasClass('new')
+
+    $.post("/messages/#{id}/mark-readed", {}, () =>
+      row.removeClass('new')
+      message.new = 0
+    )
 
 $ -> window.MailCatcher = new MailCatcher

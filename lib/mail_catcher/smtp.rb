@@ -42,8 +42,9 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     true
   end
 
-  def receive_plain_auth user, password
-    current_message[:owner] = user
+  def receive_plain_auth(user, password)
+    user.strip!
+    current_message[:owner] = user.empty? ? nil : user
 
     if MailCatcher.options[:password].nil?
       true
@@ -56,9 +57,9 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     MailCatcher::Mail.add_message current_message
     puts "==> SMTP: Received message from '#{current_message[:sender]}' (#{current_message[:source].length} bytes)"
     true
-  rescue
+  rescue Exception => e
     puts "*** Error receiving message: #{current_message.inspect}"
-    puts "    Exception: #{$!}"
+    puts "    Exception: #{e.class}: #{e.message}"
     puts "    Backtrace:"
     $!.backtrace.each do |line|
       puts "       #{line}"
