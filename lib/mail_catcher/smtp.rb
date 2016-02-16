@@ -3,6 +3,8 @@ require "eventmachine"
 require "mail_catcher/mail"
 
 class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
+  attr_accessor :password
+
   # We override EM's mail from processing to allow multiple mail-from commands
   # per [RFC 2821](http://tools.ietf.org/html/rfc2821#section-4.1.1.2)
   def process_mail_from sender
@@ -42,18 +44,14 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     true
   end
 
-  def receive_plain_auth(user, password)
+  def receive_plain_auth(user, pass)
     user.strip!
-    current_message[:owner] = user.empty? ? nil : user
-
-    if MailCatcher.options[:password].nil?
-      true
-    else
-      MailCatcher.options[:password] === password
-    end
+    @owner = user.empty? ? nil : user
+    password.nil? || password === pass
   end
 
   def receive_message
+    current_message[:owner] = @owner
     MailCatcher::Mail.add_message current_message
     puts "==> SMTP: Received message from '#{current_message[:sender]}' (#{current_message[:source].length} bytes)"
     true
@@ -68,5 +66,55 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     false
   ensure
     @current_message = nil
+  end
+
+  def reset_protocol_state(keep_auth = false)
+    init_protocol_state
+    s,@state = @state,[]
+    @state << :starttls if s.include?(:starttls)
+    @state << :ehlo if s.include?(:ehlo)
+    @state << :auth if s.include?(:auth) and keep_auth
+    receive_transaction unless keep_auth
+  end
+
+  def process_data_line ln
+    if ln == "."
+      if @databuffer.length > 0
+        receive_data_chunk @databuffer
+        @databuffer.clear
+      end
+
+
+      succeeded = proc {
+        send_data "250 Message accepted\r\n"
+        reset_protocol_state(true)
+      }
+      failed = proc {
+        send_data "550 Message rejected\r\n"
+        reset_protocol_state(true)
+      }
+      d = receive_message
+
+      if d.respond_to?(:set_deferred_status)
+        d.callback(&succeeded)
+        d.errback(&failed)
+      else
+        (d ? succeeded : failed).call
+      end
+
+      @state.delete :data
+    else
+      # slice off leading . if any
+      ln.slice!(0...1) if ln[0] == ?.
+      @databuffer << ln
+      if @databuffer.length > @@parms[:chunksize]
+        receive_data_chunk @databuffer
+        @databuffer.clear
+      end
+    end
+  end
+
+  def receive_transaction
+    @owner = nil
   end
 end

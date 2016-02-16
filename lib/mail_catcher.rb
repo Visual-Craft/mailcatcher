@@ -105,8 +105,7 @@ module MailCatcher extend self
         end
 
         parser.on('-p PASS', '--password PASS', 'Set password for SMTP authentication') do |password|
-          options[:password] = password
-          Smtp.parms = { :auth => :required }
+          Smtp.password = password
         end
 
         if mac?
@@ -157,6 +156,7 @@ module MailCatcher extend self
     puts "Starting MailCatcher"
 
     Thin::Logging.silent = (ENV["MAILCATCHER_ENV"] != "development")
+    Smtp.parms = { :auth => :required }
 
     # One EventMachine loop...
     EventMachine.run do
