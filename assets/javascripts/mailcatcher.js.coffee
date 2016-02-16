@@ -1,7 +1,6 @@
 #= require modernizr
 #= require jquery
 #= require date
-#= require favcount
 #= require flexie
 #= require keymaster
 #= require underscore
@@ -97,8 +96,6 @@ class MailCatcher
       if confirm("Are you sure you want to clear #{message}?")
         @deleteMessages(owner)
     )
-
-    @favcount = new Favcount($("""link[rel="icon"]""").attr("href"))
 
     key "up", =>
       if @selectedMessage()
@@ -346,22 +343,28 @@ class MailCatcher
   displayMessages: ->
     $("#messages tbody").empty()
     @clearFolders()
-    count = 0
+    allCount = 0
+    noOwnerCount = 0
+    byOwnerCount = {}
 
     $.each(@messages, (i, message) =>
+      allCount++
+
+      if message.owner?
+        byOwnerCount[message.owner] ||= 0
+        byOwnerCount[message.owner]++
+      else
+        noOwnerCount++
+
       if @allOwners or message.owner == @selectedOwner
         @addMessage(message)
-        count++
     )
 
-    @favcount.set(count)
-    document.title = "MailCatcher (#{count})"
-
-    @addFolder('All', 'data-all-owners', 'true')
-    @addFolder('No owner', 'data-no-owner', 'true')
+    @addFolder('All', allCount, 'data-all-owners', 'true')
+    @addFolder('No owner', noOwnerCount, 'data-no-owner', 'true')
 
     $.each(@owners, (owner) =>
-      @addFolder(owner, 'data-owner', owner)
+      @addFolder(owner, byOwnerCount[owner], 'data-owner', owner)
     )
 
     @selectFolder()
@@ -379,12 +382,12 @@ class MailCatcher
 
     @foldersRoot.find("li#{filter}").addClass('selected')
 
-  addFolder: (text, attrName, attrValue) ->
+  addFolder: (text, count, attrName, attrValue) ->
     @foldersRoot
       .append(
         $('<li class="noselect" />')
           .attr(attrName, attrValue)
-          .text(text)
+          .text("#{text} (#{count})")
           .append($('<span class="clear-folder" />').text('Clear'))
       )
 
