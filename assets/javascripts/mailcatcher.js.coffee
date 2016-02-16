@@ -12,6 +12,7 @@ jQuery.expr[":"].icontains = (a, i, m) ->
 
 class MailCatcher
   constructor: ->
+    @foldersRoot = $(".folders-wrapper ul")
     @reset()
 
     $("#messages tr").live "click", (e) =>
@@ -72,7 +73,7 @@ class MailCatcher
           error: ->
             alert "Error while quitting."
 
-    $(".folders ul li").live('click', (e) =>
+    @foldersRoot.find("li, .clear-folder").live('click', (e) =>
       $element = $(e.target)
 
       return if $element.is('.selected')
@@ -322,8 +323,7 @@ class MailCatcher
 
   displayMessages: ->
     $("#messages tbody").empty()
-    foldersWrapper = $(".folders-wrapper ul")
-    foldersWrapper.empty()
+    @clearFolders()
     count = 0
 
     $.each(@messages, (i, message) =>
@@ -335,18 +335,19 @@ class MailCatcher
     @favcount.set(count)
     document.title = "MailCatcher (#{count})"
 
-    folderTemplate = $('<li class="noselect" />')
-    clearTemplate = $('<span class="clear-folder" />')
-    clearText = 'Clear'
-
-    foldersWrapper
-      .append(folderTemplate.clone().attr('data-all-owners', 'true').text('All').append(clearTemplate.clone().text(clearText)))
-      .append(folderTemplate.clone().attr('data-no-owner', 'true').text('No owner').append(clearTemplate.clone().text(clearText)))
+    @addFolder('All', 'data-all-owners', 'true')
+    @addFolder('No owner', 'data-no-owner', 'true')
 
     $.each(@owners, (owner) =>
-      foldersWrapper.append(folderTemplate.clone().attr("data-owner", owner).text(owner).append(clearTemplate.clone().text(clearText)))
+      @addFolder(owner, 'data-owner', owner)
     )
 
+    @selectFolder()
+
+  clearFolders: () ->
+    @foldersRoot.empty()
+
+  selectFolder: () ->
     if @allOwners
       filter = '[data-all-owners]'
     else if @selectedOwner == null
@@ -354,7 +355,16 @@ class MailCatcher
     else
       filter = "[data-owner='#{@selectedOwner}']"
 
-    foldersWrapper.find("li#{filter}").addClass('selected')
+    @foldersRoot.find("li#{filter}").addClass('selected')
+
+  addFolder: (text, attrName, attrValue) ->
+    @foldersRoot
+      .append(
+        $('<li class="noselect" />')
+          .attr(attrName, attrValue)
+          .text(text)
+          .append($('<span class="clear-folder" />').text('Clear'))
+      )
 
   subscribe: ->
     if WebSocket?
