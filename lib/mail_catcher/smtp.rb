@@ -69,4 +69,50 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   ensure
     @current_message = nil
   end
+
+  def reset_protocol_state(keep_auth = false)
+    init_protocol_state
+    s,@state = @state,[]
+    @state << :starttls if s.include?(:starttls)
+    @state << :ehlo if s.include?(:ehlo)
+    @state << :auth if s.include?(:auth) and keep_auth
+    receive_transaction unless keep_auth
+  end
+
+  def process_data_line ln
+    if ln == "."
+      if @databuffer.length > 0
+        receive_data_chunk @databuffer
+        @databuffer.clear
+      end
+
+
+      succeeded = proc {
+        send_data "250 Message accepted\r\n"
+        reset_protocol_state(true)
+      }
+      failed = proc {
+        send_data "550 Message rejected\r\n"
+        reset_protocol_state(true)
+      }
+      d = receive_message
+
+      if d.respond_to?(:set_deferred_status)
+        d.callback(&succeeded)
+        d.errback(&failed)
+      else
+        (d ? succeeded : failed).call
+      end
+
+      @state.delete :data
+    else
+      # slice off leading . if any
+      ln.slice!(0...1) if ln[0] == ?.
+      @databuffer << ln
+      if @databuffer.length > @@parms[:chunksize]
+        receive_data_chunk @databuffer
+        @databuffer.clear
+      end
+    end
+  end
 end
