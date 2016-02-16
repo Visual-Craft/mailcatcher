@@ -49,19 +49,6 @@ class MailCatcher
 
     @resizeToSaved()
 
-    $("nav.app .clear a").live "click", (e) =>
-      e.preventDefault()
-      if confirm "You will lose all your received messages.\n\nAre you sure you want to clear all messages?"
-        $.ajax
-          url: "/messages"
-          type: "DELETE"
-          success: =>
-            @reset()
-            @unselectMessage()
-            @displayMessages()
-          error: ->
-            alert "Error while clearing all messages."
-
     $("nav.app .quit a").live "click", (e) =>
       e.preventDefault()
       if confirm "You will lose all your received messages.\n\nAre you sure you want to quit?"
