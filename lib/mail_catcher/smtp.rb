@@ -3,8 +3,6 @@ require "eventmachine"
 require "mail_catcher/mail"
 
 class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
-  attr_accessor :password
-
   # We override EM's mail from processing to allow multiple mail-from commands
   # per [RFC 2821](http://tools.ietf.org/html/rfc2821#section-4.1.1.2)
   def process_mail_from sender
@@ -44,10 +42,10 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     true
   end
 
-  def receive_plain_auth(user, pass)
+  def receive_plain_auth(user, password)
     user.strip!
     @owner = user.empty? ? nil : user
-    password.nil? || password === pass
+    MailCatcher.options[:password].nil? || MailCatcher.options[:password] === password
   end
 
   def receive_message

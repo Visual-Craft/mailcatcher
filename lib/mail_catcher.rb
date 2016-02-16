@@ -105,7 +105,7 @@ module MailCatcher extend self
         end
 
         parser.on('-p PASS', '--password PASS', 'Set password for SMTP authentication') do |password|
-          Smtp.password = password
+          options[:password] = password
         end
 
         if mac?
