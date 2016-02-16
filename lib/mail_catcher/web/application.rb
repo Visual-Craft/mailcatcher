@@ -90,7 +90,14 @@ module MailCatcher
       end
 
       delete "/messages" do
-        Mail.delete!
+        owner = params[:owner]
+
+        if owner.nil?
+          Mail.delete!
+        else
+          Mail.delete_by_owner!(owner)
+        end
+
         status 204
       end
 

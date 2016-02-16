@@ -75,6 +75,10 @@ class MailCatcher
     @foldersRoot.find("li, .clear-folder").live('click', (e) =>
       $element = $(e.target)
 
+      unless $element.is('li')
+        e.stopPropagation()
+        $element = $element.closest('li')
+
       return if $element.is('.selected')
 
       if $element.data('all-owners')
@@ -90,6 +94,21 @@ class MailCatcher
         return
 
       @displayMessages()
+    )
+
+    @foldersRoot.find(".clear-folder").live("click", () =>
+      if @allOwners
+        message = 'all messages'
+        owner = null
+      else if @selectedOwner == null
+        message = 'messages without owner'
+        owner = ''
+      else
+        message = "messages with owner '#{@selectedOwner}'"
+        owner = @selectedOwner
+
+      if confirm("Are you sure you want to clear #{message}?")
+        @deleteMessages(owner)
     )
 
     @favcount = new Favcount($("""link[rel="icon"]""").attr("href"))
@@ -286,6 +305,21 @@ class MailCatcher
 
         error: ->
           alert "Error while removing message."
+
+  deleteMessages: (owner) ->
+    if owner == null
+      params = ''
+    else
+      params = '?' + $.param({"owner": owner})
+
+    $.ajax
+      url: "/messages#{params}"
+      type: "DELETE"
+      success: =>
+        @refresh()
+      error: ->
+        alert "Error while clearing messages."
+
 
   # XXX: These should probably cache their iframes for the current message now we're using a remote service:
 

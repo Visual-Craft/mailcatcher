@@ -166,6 +166,17 @@ module MailCatcher::Mail extend self
     @delete_all_message_parts_query.execute
   end
 
+  def delete_by_owner!(owner)
+    if owner.blank?
+      @delete_messages_no_owner_query ||= db.prepare "DELETE FROM message WHERE owner IS NULL"
+      @delete_messages_no_owner_query.execute
+    else
+      p owner
+      @delete_messages_owner_query ||= db.prepare "DELETE FROM message WHERE CAST(owner AS TEXT) = ?"
+      @delete_messages_owner_query.execute(owner)
+    end
+  end
+
   def delete_message!(message_id)
     @delete_messages_query ||= db.prepare "DELETE FROM message WHERE id = ?"
     @delete_message_parts_query ||= db.prepare "DELETE FROM message_part WHERE message_id = ?"
