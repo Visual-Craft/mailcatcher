@@ -303,6 +303,7 @@ class MailCatcher
       url: "/messages#{params}"
       type: "DELETE"
       success: =>
+        @unselectMessage()
         @refresh()
       error: ->
         alert "Error while clearing messages."
