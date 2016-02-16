@@ -340,7 +340,7 @@ class MailCatcher
         @addMessageData(message)
       @displayMessages()
 
-  displayMessages: ->
+  displayMessages: _.throttle(() ->
     $("#messages tbody").empty()
     @clearFolders()
     allCount = 0
@@ -368,6 +368,7 @@ class MailCatcher
     )
 
     @selectFolder()
+  , 1000)
 
   clearFolders: () ->
     @foldersRoot.empty()
