@@ -171,7 +171,6 @@ module MailCatcher::Mail extend self
       @delete_messages_no_owner_query ||= db.prepare "DELETE FROM message WHERE owner IS NULL"
       @delete_messages_no_owner_query.execute
     else
-      p owner
       @delete_messages_owner_query ||= db.prepare "DELETE FROM message WHERE CAST(owner AS TEXT) = ?"
       @delete_messages_owner_query.execute(owner)
     end
