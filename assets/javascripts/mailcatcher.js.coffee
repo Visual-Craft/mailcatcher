@@ -13,7 +13,6 @@ jQuery.expr[":"].icontains = (a, i, m) ->
 class MailCatcher
   constructor: ->
     @foldersRoot = $(".folders-wrapper ul")
-    @reset()
 
     $("#messages tr").live "click", (e) =>
       e.preventDefault()
@@ -316,6 +315,7 @@ class MailCatcher
         message_iframe.find("html").html("<html><body>#{text}</html></body>")
 
   refresh: ->
+    @reset()
     $.getJSON "/messages", (messages) =>
       $.each messages, (i, message) =>
         @addMessageData(message)
