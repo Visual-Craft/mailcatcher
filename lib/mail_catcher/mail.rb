@@ -185,7 +185,7 @@ module MailCatcher::Mail extend self
   end
 
   def mark_readed(id)
-    @mark_readed_query ||= db.prepare 'UPDATE message SET new = 0 WHERE id = ? LIMIT 1'
+    @mark_readed_query ||= db.prepare 'UPDATE message SET new = 0 WHERE id = ?'
     @mark_readed_query.execute(id)
   end
 end
