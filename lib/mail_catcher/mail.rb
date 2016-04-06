@@ -44,38 +44,50 @@ module MailCatcher::Mail extend self
   end
 
   def add_message(message)
-    @add_message_query ||= db.prepare("INSERT INTO message (owner, sender, recipients, subject, source, type, size, new, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))")
-
     mail = Mail.new(message[:source])
-    @add_message_query.execute(
-        message[:owner],
-        message[:sender],
-        message[:recipients].to_json,
-        mail.subject,
-        message[:source],
-        mail.mime_type || "text/plain",
-        message[:source].length,
-        1
-    )
-    message_id = db.last_insert_row_id
-    parts = mail.all_parts
-    parts = [mail] if parts.empty?
-    parts.each do |part|
-      body = part.body.to_s
-      # Only parts have CIDs, not mail
-      cid = part.cid if part.respond_to? :cid
-      add_message_part(message_id, cid, part.mime_type || "text/plain", part.attachment? ? 1 : 0, part.filename, part.charset, body, body.length)
+    @add_message_query ||= db.prepare("INSERT INTO message (owner, sender, recipients, subject, source, type, size, new, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))")
+    @add_message_part_query ||= db.prepare "INSERT INTO message_part (message_id, cid, type, is_attachment, filename, charset, body, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))"
+
+    db.query('BEGIN IMMEDIATE TRANSACTION')
+
+    begin
+      @add_message_query.execute(
+          message[:owner],
+          message[:sender],
+          message[:recipients].to_json,
+          mail.subject,
+          message[:source],
+          mail.mime_type || 'text/plain',
+          message[:source].length,
+          1
+      )
+      message_id = db.last_insert_row_id
+      parts = mail.all_parts
+      parts = [mail] if parts.empty?
+      parts.each do |part|
+        body = part.body.to_s
+        @add_message_part_query.execute(
+            message_id,
+            # Only parts have CIDs, not mail
+            part.respond_to?(:cid) ? part.cid : nil,
+            part.mime_type || 'text/plain',
+            part.attachment? ? 1 : 0,
+            part.filename,
+            part.charset,
+            body,
+            body.length
+        )
+      end
+    rescue
+      db.query('ROLLBACK TRANSACTION')
+    else
+      db.query('COMMIT TRANSACTION')
     end
 
     EventMachine.next_tick do
       message = MailCatcher::Mail.message message_id
       MailCatcher::Events::MessageAdded.push message
     end
-  end
-
-  def add_message_part(*args)
-    @add_message_part_query ||= db.prepare "INSERT INTO message_part (message_id, cid, type, is_attachment, filename, charset, body, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))"
-    @add_message_part_query.execute(*args)
   end
 
   def latest_created_at
