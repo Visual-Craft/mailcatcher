@@ -10,13 +10,13 @@ module MailCatcher::Mail extend self
 
   def add_message(message)
     mail = Mail.new(message[:source])
-    @add_message_query ||= db.prepare("INSERT INTO message (owner, sender, recipients, subject, source, type, size, new, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))")
-    @add_message_part_query ||= db.prepare "INSERT INTO message_part (message_id, cid, type, is_attachment, filename, charset, body, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))"
+    add_message_query = prepare_query("INSERT INTO message (owner, sender, recipients, subject, source, type, size, new, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))")
+    add_message_part_query = prepare_query("INSERT INTO message_part (message_id, cid, type, is_attachment, filename, charset, body, size, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))")
 
     db.query('BEGIN IMMEDIATE TRANSACTION')
 
     begin
-      @add_message_query.execute(
+      add_message_query.execute(
           message[:owner],
           message[:sender],
           message[:recipients].to_json,
@@ -31,7 +31,7 @@ module MailCatcher::Mail extend self
       parts = [mail] if parts.empty?
       parts.each do |part|
         body = part.body.to_s
-        @add_message_part_query.execute(
+        add_message_part_query.execute(
             message_id,
             # Only parts have CIDs, not mail
             part.respond_to?(:cid) ? part.cid : nil,
