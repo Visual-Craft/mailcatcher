@@ -38,7 +38,6 @@ module MailCatcher extend self
     :http_ip => '127.0.0.1',
     :http_port => '1080',
     :verbose => false,
-    :daemon => !windows?,
     :quit => true,
   }
 
@@ -95,12 +94,6 @@ module MailCatcher extend self
           end
         end
 
-        unless windows?
-          parser.on('-f', '--foreground', 'Run in the foreground') do
-            options[:daemon] = false
-          end
-        end
-
         parser.on('-v', '--verbose', 'Be more verbose') do
           options[:verbose] = true
         end
@@ -123,9 +116,7 @@ module MailCatcher extend self
     @@options = options
 
     # If we're running in the foreground sync the output.
-    unless options[:daemon]
-      $stdout.sync = $stderr.sync = true
-    end
+    $stdout.sync = $stderr.sync = true
 
     puts "Starting MailCatcher"
 
@@ -148,18 +139,6 @@ module MailCatcher extend self
       rescue_port options[:http_port] do
         Thin::Server.start(options[:http_ip], options[:http_port], Web)
         puts "==> #{http_url}"
-      end
-
-      # Daemonize, if we should, but only after the servers have started.
-      if options[:daemon]
-        EventMachine.next_tick do
-          if quittable?
-            puts "*** MailCatcher runs as a daemon by default. Go to the web interface to quit."
-          else
-            puts "*** MailCatcher is now running as a daemon that cannot be quit."
-          end
-          Process.daemon
-        end
       end
     end
   end
