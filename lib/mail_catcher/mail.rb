@@ -1,7 +1,7 @@
-require "active_support/json"
-require "eventmachine"
-require "mail"
-require "sqlite3"
+require 'active_support/json'
+require 'eventmachine'
+require 'mail'
+require 'sqlite3'
 
 module MailCatcher::Mail extend self
   def database_path=(val)
@@ -56,101 +56,101 @@ module MailCatcher::Mail extend self
   end
 
   def latest_created_at
-    query = prepare_query("SELECT created_at FROM message ORDER BY created_at DESC LIMIT 1")
+    query = prepare_query('SELECT created_at FROM message ORDER BY created_at DESC LIMIT 1')
     query.execute.next
   end
 
   def messages
-    query = prepare_query("SELECT id, owner, sender, recipients, subject, size, new, created_at FROM message ORDER BY created_at, id ASC")
+    query = prepare_query('SELECT id, owner, sender, recipients, subject, size, new, created_at FROM message ORDER BY created_at, id ASC')
     query.execute.map do |row|
       Hash[row.fields.zip(row)].tap do |message|
-        message["recipients"] &&= ActiveSupport::JSON.decode message["recipients"]
+        message['recipients'] &&= ActiveSupport::JSON.decode message['recipients']
       end
     end
   end
 
   def message(id)
-    query = prepare_query("SELECT * FROM message WHERE id = ? LIMIT 1")
+    query = prepare_query('SELECT * FROM message WHERE id = ? LIMIT 1')
     row = query.execute(id).next
     row && Hash[row.fields.zip(row)].tap do |message|
-      message["recipients"] &&= ActiveSupport::JSON.decode message["recipients"]
+      message['recipients'] &&= ActiveSupport::JSON.decode message['recipients']
     end
   end
 
   def message_has_html?(id)
     query = prepare_query("SELECT 1 FROM message_part WHERE message_id = ? AND is_attachment = 0 AND type IN ('application/xhtml+xml', 'text/html') LIMIT 1")
-    (!!query.execute(id).next) || ["text/html", "application/xhtml+xml"].include?(message(id)["type"])
+    (!!query.execute(id).next) || %w(text/html application/xhtml+xml).include?(message(id)['type'])
   end
 
   def message_has_plain?(id)
     query = prepare_query("SELECT 1 FROM message_part WHERE message_id = ? AND is_attachment = 0 AND type = 'text/plain' LIMIT 1")
-    (!!query.execute(id).next) || message(id)["type"] == "text/plain"
+    (!!query.execute(id).next) || message(id)['type'] == 'text/plain'
   end
 
   def message_parts(id)
-    query = prepare_query("SELECT cid, type, filename, size FROM message_part WHERE message_id = ? ORDER BY filename ASC")
+    query = prepare_query('SELECT cid, type, filename, size FROM message_part WHERE message_id = ? ORDER BY filename ASC')
     query.execute(id).map do |row|
       Hash[row.fields.zip(row)]
     end
   end
 
   def message_attachments(id)
-    query = prepare_query("SELECT cid, type, filename, size FROM message_part WHERE message_id = ? AND is_attachment = 1 ORDER BY filename ASC")
+    query = prepare_query('SELECT cid, type, filename, size FROM message_part WHERE message_id = ? AND is_attachment = 1 ORDER BY filename ASC')
     query.execute(id).map do |row|
       Hash[row.fields.zip(row)]
     end
   end
 
   def message_part(message_id, part_id)
-    query = prepare_query("SELECT * FROM message_part WHERE message_id = ? AND id = ? LIMIT 1")
+    query = prepare_query('SELECT * FROM message_part WHERE message_id = ? AND id = ? LIMIT 1')
     row = query.execute(message_id, part_id).next
     row && Hash[row.fields.zip(row)]
   end
 
   def message_part_type(message_id, part_type)
-    query = prepare_query("SELECT * FROM message_part WHERE message_id = ? AND type = ? AND is_attachment = 0 LIMIT 1")
+    query = prepare_query('SELECT * FROM message_part WHERE message_id = ? AND type = ? AND is_attachment = 0 LIMIT 1')
     row = query.execute(message_id, part_type).next
     row && Hash[row.fields.zip(row)]
   end
 
   def message_part_html(message_id)
-    part = message_part_type(message_id, "text/html")
-    part ||= message_part_type(message_id, "application/xhtml+xml")
+    part = message_part_type(message_id, 'text/html')
+    part ||= message_part_type(message_id, 'application/xhtml+xml')
     part ||= begin
       message = message(message_id)
-      message if message.present? and ["text/html", "application/xhtml+xml"].include? message["type"]
+      message if message.present? and %w(text/html application/xhtml+xml).include? message['type']
     end
   end
 
   def message_part_plain(message_id)
-    message_part_type message_id, "text/plain"
+    message_part_type message_id, 'text/plain'
   end
 
   def message_part_cid(message_id, cid)
-    query = prepare_query("SELECT * FROM message_part WHERE message_id = ?")
+    query = prepare_query('SELECT * FROM message_part WHERE message_id = ?')
     query.execute(message_id).map do |row|
       Hash[row.fields.zip(row)]
     end.find do |part|
-      part["cid"] == cid
+      part['cid'] == cid
     end
   end
 
   def delete!
-    prepare_query("DELETE FROM message").execute and
-    prepare_query("DELETE FROM message_part").execute
+    prepare_query('DELETE FROM message').execute and
+    prepare_query('DELETE FROM message_part').execute
   end
 
   def delete_by_owner!(owner)
     if owner.blank?
-      prepare_query("DELETE FROM message WHERE owner IS NULL").execute
+      prepare_query('DELETE FROM message WHERE owner IS NULL').execute
     else
-      prepare_query("DELETE FROM message WHERE CAST(owner AS TEXT) = ?").execute(owner)
+      prepare_query('DELETE FROM message WHERE CAST(owner AS TEXT) = ?').execute(owner)
     end
   end
 
   def delete_message!(message_id)
-    prepare_query("DELETE FROM message WHERE id = ?").execute(message_id) and
-    prepare_query("DELETE FROM message_part WHERE message_id = ?").execute(message_id)
+    prepare_query('DELETE FROM message WHERE id = ?').execute(message_id) and
+    prepare_query('DELETE FROM message_part WHERE message_id = ?').execute(message_id)
   end
 
   def mark_readed(id)
@@ -161,7 +161,7 @@ module MailCatcher::Mail extend self
 
   def db
     @__db ||= begin
-      SQLite3::Database.new(@database_path || ":memory:", :type_translation => true).tap do |db|
+      SQLite3::Database.new(@database_path || ':memory:', :type_translation => true).tap do |db|
         db.execute(<<-SQL)
           CREATE TABLE IF NOT EXISTS message (
             id INTEGER PRIMARY KEY ASC,
