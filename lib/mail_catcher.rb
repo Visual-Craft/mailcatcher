@@ -26,15 +26,10 @@ module MailCatcher extend self
     :http_ip => '127.0.0.1',
     :http_port => '1080',
     :verbose => false,
-    :quit => true,
   }
 
   def options
     @@options
-  end
-
-  def quittable?
-    options[:quit]
   end
 
   def parse! arguments=ARGV, defaults=@defaults
@@ -61,10 +56,6 @@ module MailCatcher extend self
 
         parser.on("--http-port PORT", Integer, "Set the port address of the http server") do |port|
           options[:http_port] = port
-        end
-
-        parser.on("--no-quit", "Don't allow quitting the process") do
-          options[:quit] = false
         end
 
         parser.on("--database PATH", "Set emails database path") do |path|

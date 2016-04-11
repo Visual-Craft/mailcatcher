@@ -51,15 +51,6 @@ module MailCatcher
         erb :index
       end
 
-      delete "/" do
-        if MailCatcher.quittable?
-          MailCatcher.quit!
-          status 204
-        else
-          status 403
-        end
-      end
-
       get "/messages" do
         content_type :json
         Mail.messages.to_json
