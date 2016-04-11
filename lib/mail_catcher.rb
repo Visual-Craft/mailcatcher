@@ -1,4 +1,3 @@
-require "open3"
 require "optparse"
 require "rbconfig"
 
@@ -21,12 +20,6 @@ require "mail_catcher/web"
 require "mail_catcher/version"
 
 module MailCatcher extend self
-  def which(command)
-    not windows? and Open3.popen3 'which', 'command' do |stdin, stdout, stderr|
-      return stdout.read.chomp.presence
-    end
-  end
-
   def mac?
     RbConfig::CONFIG['host_os'] =~ /darwin/
   end
@@ -39,18 +32,6 @@ module MailCatcher extend self
     mac? and const_defined? :MACRUBY_VERSION
   end
 
-  def browse?
-    windows? or which "open"
-  end
-
-  def browse url
-    if windows?
-      system "start", "/b", url
-    elsif which "open"
-      system "open", url
-    end
-  end
-
   @@defaults = {
     :smtp_ip => '127.0.0.1',
     :smtp_port => '1025',
@@ -58,7 +39,6 @@ module MailCatcher extend self
     :http_port => '1080',
     :verbose => false,
     :daemon => !windows?,
-    :browse => false,
     :quit => true,
   }
 
@@ -121,12 +101,6 @@ module MailCatcher extend self
           end
         end
 
-        if browse?
-          parser.on('-b', '--browse', 'Open web browser') do
-            options[:browse] = true
-          end
-        end
-
         parser.on('-v', '--verbose', 'Be more verbose') do
           options[:verbose] = true
         end
@@ -174,13 +148,6 @@ module MailCatcher extend self
       rescue_port options[:http_port] do
         Thin::Server.start(options[:http_ip], options[:http_port], Web)
         puts "==> #{http_url}"
-      end
-
-      # Open the web browser before detatching console
-      if options[:browse]
-        EventMachine.next_tick do
-          browse http_url
-        end
       end
 
       # Daemonize, if we should, but only after the servers have started.
