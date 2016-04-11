@@ -8,41 +8,6 @@ module MailCatcher::Mail extend self
     @database_path = val
   end
 
-  def db
-    @__db ||= begin
-      SQLite3::Database.new(@database_path || ":memory:", :type_translation => true).tap do |db|
-        db.execute(<<-SQL)
-          CREATE TABLE IF NOT EXISTS message (
-            id INTEGER PRIMARY KEY ASC,
-            owner TEXT DEFAULT NULL,
-            sender TEXT,
-            recipients TEXT,
-            subject TEXT,
-            source BLOB,
-            size TEXT,
-            type TEXT,
-            new INTEGER,
-            created_at DATETIME DEFAULT CURRENT_DATETIME
-          )
-        SQL
-        db.execute(<<-SQL)
-          CREATE TABLE IF NOT EXISTS message_part (
-            id INTEGER PRIMARY KEY ASC,
-            message_id INTEGER NOT NULL,
-            cid TEXT,
-            type TEXT,
-            is_attachment INTEGER,
-            filename TEXT,
-            charset TEXT,
-            body BLOB,
-            size INTEGER,
-            created_at DATETIME DEFAULT CURRENT_DATETIME
-          )
-        SQL
-      end
-    end
-  end
-
   def add_message(message)
     mail = Mail.new(message[:source])
     @add_message_query ||= db.prepare("INSERT INTO message (owner, sender, recipients, subject, source, type, size, new, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))")
@@ -91,13 +56,13 @@ module MailCatcher::Mail extend self
   end
 
   def latest_created_at
-    @latest_created_at_query ||= db.prepare "SELECT created_at FROM message ORDER BY created_at DESC LIMIT 1"
-    @latest_created_at_query.execute.next
+    query = prepare_query("SELECT created_at FROM message ORDER BY created_at DESC LIMIT 1")
+    query.execute.next
   end
 
   def messages
-    @messages_query ||= db.prepare "SELECT id, owner, sender, recipients, subject, size, new, created_at FROM message ORDER BY created_at, id ASC"
-    @messages_query.execute.map do |row|
+    query = prepare_query("SELECT id, owner, sender, recipients, subject, size, new, created_at FROM message ORDER BY created_at, id ASC")
+    query.execute.map do |row|
       Hash[row.fields.zip(row)].tap do |message|
         message["recipients"] &&= ActiveSupport::JSON.decode message["recipients"]
       end
@@ -105,46 +70,46 @@ module MailCatcher::Mail extend self
   end
 
   def message(id)
-    @message_query ||= db.prepare "SELECT * FROM message WHERE id = ? LIMIT 1"
-    row = @message_query.execute(id).next
+    query = prepare_query("SELECT * FROM message WHERE id = ? LIMIT 1")
+    row = query.execute(id).next
     row && Hash[row.fields.zip(row)].tap do |message|
       message["recipients"] &&= ActiveSupport::JSON.decode message["recipients"]
     end
   end
 
   def message_has_html?(id)
-    @message_has_html_query ||= db.prepare "SELECT 1 FROM message_part WHERE message_id = ? AND is_attachment = 0 AND type IN ('application/xhtml+xml', 'text/html') LIMIT 1"
-    (!!@message_has_html_query.execute(id).next) || ["text/html", "application/xhtml+xml"].include?(message(id)["type"])
+    query = prepare_query("SELECT 1 FROM message_part WHERE message_id = ? AND is_attachment = 0 AND type IN ('application/xhtml+xml', 'text/html') LIMIT 1")
+    (!!query.execute(id).next) || ["text/html", "application/xhtml+xml"].include?(message(id)["type"])
   end
 
   def message_has_plain?(id)
-    @message_has_plain_query ||= db.prepare "SELECT 1 FROM message_part WHERE message_id = ? AND is_attachment = 0 AND type = 'text/plain' LIMIT 1"
-    (!!@message_has_plain_query.execute(id).next) || message(id)["type"] == "text/plain"
+    query = prepare_query("SELECT 1 FROM message_part WHERE message_id = ? AND is_attachment = 0 AND type = 'text/plain' LIMIT 1")
+    (!!query.execute(id).next) || message(id)["type"] == "text/plain"
   end
 
   def message_parts(id)
-    @message_parts_query ||= db.prepare "SELECT cid, type, filename, size FROM message_part WHERE message_id = ? ORDER BY filename ASC"
-    @message_parts_query.execute(id).map do |row|
+    query = prepare_query("SELECT cid, type, filename, size FROM message_part WHERE message_id = ? ORDER BY filename ASC")
+    query.execute(id).map do |row|
       Hash[row.fields.zip(row)]
     end
   end
 
   def message_attachments(id)
-    @message_parts_query ||= db.prepare "SELECT cid, type, filename, size FROM message_part WHERE message_id = ? AND is_attachment = 1 ORDER BY filename ASC"
-    @message_parts_query.execute(id).map do |row|
+    query = prepare_query("SELECT cid, type, filename, size FROM message_part WHERE message_id = ? AND is_attachment = 1 ORDER BY filename ASC")
+    query.execute(id).map do |row|
       Hash[row.fields.zip(row)]
     end
   end
 
   def message_part(message_id, part_id)
-    @message_part_query ||= db.prepare "SELECT * FROM message_part WHERE message_id = ? AND id = ? LIMIT 1"
-    row = @message_part_query.execute(message_id, part_id).next
+    query = prepare_query("SELECT * FROM message_part WHERE message_id = ? AND id = ? LIMIT 1")
+    row = query.execute(message_id, part_id).next
     row && Hash[row.fields.zip(row)]
   end
 
   def message_part_type(message_id, part_type)
-    @message_part_type_query ||= db.prepare "SELECT * FROM message_part WHERE message_id = ? AND type = ? AND is_attachment = 0 LIMIT 1"
-    row = @message_part_type_query.execute(message_id, part_type).next
+    query = prepare_query("SELECT * FROM message_part WHERE message_id = ? AND type = ? AND is_attachment = 0 LIMIT 1")
+    row = query.execute(message_id, part_type).next
     row && Hash[row.fields.zip(row)]
   end
 
@@ -162,8 +127,8 @@ module MailCatcher::Mail extend self
   end
 
   def message_part_cid(message_id, cid)
-    @message_part_cid_query ||= db.prepare "SELECT * FROM message_part WHERE message_id = ?"
-    @message_part_cid_query.execute(message_id).map do |row|
+    query = prepare_query("SELECT * FROM message_part WHERE message_id = ?")
+    query.execute(message_id).map do |row|
       Hash[row.fields.zip(row)]
     end.find do |part|
       part["cid"] == cid
@@ -171,32 +136,66 @@ module MailCatcher::Mail extend self
   end
 
   def delete!
-    @delete_all_messages_query ||= db.prepare "DELETE FROM message"
-    @delete_all_message_parts_query ||= db.prepare "DELETE FROM message_part"
-
-    @delete_all_messages_query.execute and
-    @delete_all_message_parts_query.execute
+    prepare_query("DELETE FROM message").execute and
+    prepare_query("DELETE FROM message_part").execute
   end
 
   def delete_by_owner!(owner)
     if owner.blank?
-      @delete_messages_no_owner_query ||= db.prepare "DELETE FROM message WHERE owner IS NULL"
-      @delete_messages_no_owner_query.execute
+      prepare_query("DELETE FROM message WHERE owner IS NULL").execute
     else
-      @delete_messages_owner_query ||= db.prepare "DELETE FROM message WHERE CAST(owner AS TEXT) = ?"
-      @delete_messages_owner_query.execute(owner)
+      prepare_query("DELETE FROM message WHERE CAST(owner AS TEXT) = ?").execute(owner)
     end
   end
 
   def delete_message!(message_id)
-    @delete_messages_query ||= db.prepare "DELETE FROM message WHERE id = ?"
-    @delete_message_parts_query ||= db.prepare "DELETE FROM message_part WHERE message_id = ?"
-    @delete_messages_query.execute(message_id) and
-    @delete_message_parts_query.execute(message_id)
+    prepare_query("DELETE FROM message WHERE id = ?").execute(message_id) and
+    prepare_query("DELETE FROM message_part WHERE message_id = ?").execute(message_id)
   end
 
   def mark_readed(id)
-    @mark_readed_query ||= db.prepare 'UPDATE message SET new = 0 WHERE id = ?'
-    @mark_readed_query.execute(id)
+    prepare_query('UPDATE message SET new = 0 WHERE id = ?').execute(id)
+  end
+
+  private
+
+  def db
+    @__db ||= begin
+      SQLite3::Database.new(@database_path || ":memory:", :type_translation => true).tap do |db|
+        db.execute(<<-SQL)
+          CREATE TABLE IF NOT EXISTS message (
+            id INTEGER PRIMARY KEY ASC,
+            owner TEXT DEFAULT NULL,
+            sender TEXT,
+            recipients TEXT,
+            subject TEXT,
+            source BLOB,
+            size TEXT,
+            type TEXT,
+            new INTEGER,
+            created_at DATETIME DEFAULT CURRENT_DATETIME
+          )
+        SQL
+        db.execute(<<-SQL)
+          CREATE TABLE IF NOT EXISTS message_part (
+            id INTEGER PRIMARY KEY ASC,
+            message_id INTEGER NOT NULL,
+            cid TEXT,
+            type TEXT,
+            is_attachment INTEGER,
+            filename TEXT,
+            charset TEXT,
+            body BLOB,
+            size INTEGER,
+            created_at DATETIME DEFAULT CURRENT_DATETIME
+          )
+        SQL
+      end
+    end
+  end
+
+  def prepare_query(sql)
+    @query_cache ||= {}
+    @query_cache[sql] ||= db.prepare(sql)
   end
 end
