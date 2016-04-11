@@ -20,18 +20,6 @@ require "mail_catcher/web"
 require "mail_catcher/version"
 
 module MailCatcher extend self
-  def mac?
-    RbConfig::CONFIG['host_os'] =~ /darwin/
-  end
-
-  def windows?
-    RbConfig::CONFIG['host_os'] =~ /mswin|mingw/
-  end
-
-  def macruby?
-    mac? and const_defined? :MACRUBY_VERSION
-  end
-
   @@defaults = {
     :smtp_ip => '127.0.0.1',
     :smtp_port => '1025',
@@ -85,13 +73,6 @@ module MailCatcher extend self
 
         parser.on('-p PASS', '--password PASS', 'Set password for SMTP authentication') do |password|
           options[:password] = password
-        end
-
-        if mac?
-          parser.on("--[no-]growl") do |growl|
-            puts "Growl is no longer supported"
-            exit -2
-          end
         end
 
         parser.on('-v', '--verbose', 'Be more verbose') do
