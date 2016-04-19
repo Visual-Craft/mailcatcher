@@ -113,10 +113,6 @@ module MailCatcher extend self
     end
   end
 
-  def quit!
-    EventMachine.next_tick { EventMachine.stop_event_loop }
-  end
-
 protected
 
   def rescue_port port
