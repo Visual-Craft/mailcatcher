@@ -51,32 +51,44 @@ module MailCatcher
         erb :index
       end
 
-      delete "/" do
-        if MailCatcher.quittable?
-          MailCatcher.quit!
-          status 204
-        else
-          status 403
-        end
+      get "/messages" do
+        content_type :json
+        Mail.messages.to_json
       end
 
-      get "/messages" do
+      get "/ws/messages" do
         if request.websocket?
           request.websocket!(
             :on_start => proc do |websocket|
               subscription = Events::MessageAdded.subscribe { |message| websocket.send_message message.to_json }
+
+              # send ping responses to correctly work with forward proxies
+              # which may close inactive connections after timeout
+              # for example nginx by default closes connection after 60 seconds of inactivity
+              timer = EventMachine::PeriodicTimer.new(30) do
+                websocket.send_message('{}')
+              end
+
               websocket.on_close do |websocket|
+                timer.cancel
                 Events::MessageAdded.unsubscribe subscription
               end
-            end)
+            end
+          )
         else
-          content_type :json
-          Mail.messages.to_json
+          status 400
         end
       end
 
       delete "/messages" do
-        Mail.delete!
+        owner = params[:owner]
+
+        if owner.nil?
+          Mail.delete!
+        else
+          Mail.delete_by_owner!(owner)
+        end
+
         status 204
       end
 
@@ -165,6 +177,17 @@ module MailCatcher
           response = Net::HTTP.post_form(uri, :api_key => "5c463877265251386f516f7428", :html => part["body"])
           content_type ".#{params[:format]}" if params[:format].present?
           body response.body
+        else
+          not_found
+        end
+      end
+
+      post '/messages/:id/mark-readed' do
+        id = params[:id].to_i
+
+        if Mail.message(id)
+          Mail.mark_readed(id)
+          status 204
         else
           not_found
         end
