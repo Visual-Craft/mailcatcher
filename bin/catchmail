@@ -66,8 +66,8 @@ Mail.defaults do
     :password => options[:password]
 end
 
-message = Mail.new($stdin.read)
-
+message = Mail.new
+message.body = $stdin.read
 message.return_path = options[:from] if options[:from]
 
 ARGV.each do |recipient|
