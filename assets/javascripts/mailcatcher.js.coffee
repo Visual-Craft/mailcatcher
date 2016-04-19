@@ -48,16 +48,6 @@ class MailCatcher
 
     @resizeToSaved()
 
-    $("nav.app .quit a").live "click", (e) =>
-      e.preventDefault()
-      if confirm "You will lose all your received messages.\n\nAre you sure you want to quit?"
-        $.ajax
-          type: "DELETE"
-          success: ->
-            location.replace $("body > header h1 a").attr("href")
-          error: ->
-            alert "Error while quitting."
-
     @foldersRoot.find("li, .clear-folder").live('click', (e) =>
       $element = $(e.target)
 
