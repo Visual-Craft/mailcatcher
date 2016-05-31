@@ -35,39 +35,12 @@ module MailCatcher extend self
       OptionParser.new do |parser|
         parser.banner = "Usage: mailcatcher [options]"
         parser.version = VERSION
-
-        parser.on("--ip IP", "Set the ip address of both servers") do |ip|
-          options[:smtp_ip] = options[:http_ip] = ip
+        parser.on('-c FILE_PATH', '--config FILE_PATH', 'Set config') do |file_path|
+          options.merge!(YAML::load_file(file_path))
         end
-
-        parser.on("--smtp-ip IP", "Set the ip address of the smtp server") do |ip|
-          options[:smtp_ip] = ip
-        end
-
-        parser.on("--smtp-port PORT", Integer, "Set the port of the smtp server") do |port|
-          options[:smtp_port] = port
-        end
-
-        parser.on("--http-ip IP", "Set the ip address of the http server") do |ip|
-          options[:http_ip] = ip
-        end
-
-        parser.on("--http-port PORT", Integer, "Set the port address of the http server") do |port|
-          options[:http_port] = port
-        end
-
-        parser.on("--database PATH", "Set emails database path") do |path|
-          Mail.database_path = path
-        end
-
-        parser.on('-p PASS', '--password PASS', 'Set password for SMTP authentication') do |password|
-          options[:password] = password
-        end
-
         parser.on('-v', '--verbose', 'Be more verbose') do
           options[:verbose] = true
         end
-
         parser.on('-h', '--help', 'Display this help information') do
           puts parser
           exit
@@ -84,6 +57,8 @@ module MailCatcher extend self
 
     # Stash them away for later
     @@options = options
+
+    Mail.database_path = @@options[:database_path] if @@options[:database_path]
 
     # If we're running in the foreground sync the output.
     $stdout.sync = $stderr.sync = true
