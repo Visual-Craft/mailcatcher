@@ -30,6 +30,8 @@ module MailCatcher extend self
 
   def run!(config)
     @@config = config
+    Mail.database_path = config.database_path if config.database_path
+    @@users = config.users ? Users.new(config.users) : nil
 
     # If we're running in the foreground sync the output.
     $stdout.sync = $stderr.sync = true
