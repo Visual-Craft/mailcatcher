@@ -16,49 +16,20 @@ require "mail_catcher/mail"
 require "mail_catcher/smtp"
 require "mail_catcher/web"
 require "mail_catcher/version"
+require 'mail_catcher/users'
+require 'mail_catcher/config'
 
 module MailCatcher extend self
-  @@defaults = {
-    :smtp_ip => '127.0.0.1',
-    :smtp_port => '1025',
-    :http_ip => '127.0.0.1',
-    :http_port => '1080',
-    :verbose => false,
-  }
-
-  def options
-    @@options
+  def config
+    @@config
   end
 
-  def parse! arguments=ARGV, defaults=@defaults
-    @@defaults.dup.tap do |options|
-      OptionParser.new do |parser|
-        parser.banner = "Usage: mailcatcher [options]"
-        parser.version = VERSION
-        parser.on('-c FILE_PATH', '--config FILE_PATH', 'Set config') do |file_path|
-          options.merge!(YAML::load_file(file_path))
-        end
-        parser.on('-v', '--verbose', 'Be more verbose') do
-          options[:verbose] = true
-        end
-        parser.on('-h', '--help', 'Display this help information') do
-          puts parser
-          exit
-        end
-      end.parse!
-    end
+  def users
+    @@users
   end
 
-  def run! options=nil
-    # If we are passed options, fill in the blanks
-    options &&= options.reverse_merge @@defaults
-    # Otherwise, parse them from ARGV
-    options ||= parse!
-
-    # Stash them away for later
-    @@options = options
-
-    Mail.database_path = @@options[:database_path] if @@options[:database_path]
+  def run!(config)
+    @@config = config
 
     # If we're running in the foreground sync the output.
     $stdout.sync = $stderr.sync = true
@@ -70,19 +41,19 @@ module MailCatcher extend self
 
     # One EventMachine loop...
     EventMachine.run do
-      smtp_url = "smtp://#{options[:smtp_ip]}:#{options[:smtp_port]}"
-      http_url = "http://#{options[:http_ip]}:#{options[:http_port]}"
+      smtp_url = "smtp://#{config.smtp_ip}:#{config.smtp_port}"
+      http_url = "http://#{config.http_ip}:#{config.http_port}"
 
       # Set up an SMTP server to run within EventMachine
-      rescue_port options[:smtp_port] do
-        EventMachine.start_server options[:smtp_ip], options[:smtp_port], Smtp
+      rescue_port config.smtp_port do
+        EventMachine.start_server config.smtp_ip, config.smtp_port, Smtp
         puts "==> #{smtp_url}"
       end
 
       # Let Thin set itself up inside our EventMachine loop
       # (Skinny/WebSockets just works on the inside)
-      rescue_port options[:http_port] do
-        Thin::Server.start(options[:http_ip], options[:http_port], Web)
+      rescue_port config.http_port do
+        Thin::Server.start(config.http_ip, config.http_port, Web)
         puts "==> #{http_url}"
       end
     end
