@@ -188,6 +188,7 @@ class MailCatcher
     $("#messages tbody tr").show()
 
   addMessage: (message) ->
+    console.log(message)
     $("<tr />").attr("data-message-id", message.id.toString())
       .addClass(if message.new == 1 then 'new' else '')
       .append($("<td/>").text(message.sender or "No sender").toggleClass("blank", !message.sender))
@@ -212,11 +213,9 @@ class MailCatcher
     null
 
   loadMessage: (id) ->
-    id = id.id if id?.id?
     id ||= $("#messages tr.selected").attr "data-message-id"
-    id = parseInt(id)
 
-    if id? and not isNaN(id)
+    if id?
       $("#messages tbody tr:not([data-message-id='#{id}'])").removeClass("selected")
       messageRow = $("#messages tbody tr[data-message-id='#{id}']")
       messageRow.addClass("selected")

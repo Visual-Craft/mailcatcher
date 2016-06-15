@@ -93,17 +93,16 @@ module MailCatcher
       end
 
       get "/messages/:id.json" do
-        id = params[:id].to_i
-        if message = Mail.message(id)
+        if message = Mail.message(params[:id])
           content_type :json
-          message.merge({
-            "formats" => [
+          message.to_h.merge({
+            formats: [
               "source",
-              ("html" if Mail.message_has_html? id),
-              ("plain" if Mail.message_has_plain? id)
+              ("html" if message.has_html?),
+              ("plain" if message.has_plain?)
             ].compact,
-            "attachments" => Mail.message_attachments(id).map do |attachment|
-              attachment.merge({"href" => "/messages/#{escape(id)}/parts/#{escape(attachment["cid"])}"})
+            attachments: message.attachments.map do |attachment|
+              attachment.merge({ "href" => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
             end,
           }).to_json
         else
@@ -112,14 +111,14 @@ module MailCatcher
       end
 
       get "/messages/:id.html" do
-        id = params[:id].to_i
-        if part = Mail.message_part_html(id)
-          content_type part["type"], :charset => (part["charset"] || "utf8")
+        message = Mail.message(params[:id])
+        if message && message.has_html?
+          content_type message.html_part[:type], :charset => (message.html_part[:charset] || "utf8")
 
-          body = part["body"]
+          body = message.html_part[:body]
 
           # Rewrite body to link to embedded attachments served by cid
-          body.gsub! /cid:([^'"> ]+)/, "#{id}/parts/\\1"
+          body.gsub! /cid:([^'"> ]+)/, "#{message.id}/parts/\\1"
 
           content_type :html
           body
@@ -129,52 +128,50 @@ module MailCatcher
       end
 
       get "/messages/:id.plain" do
-        id = params[:id].to_i
-        if part = Mail.message_part_plain(id)
-          content_type part["type"], :charset => (part["charset"] || "utf8")
-          part["body"]
+        message = Mail.message(params[:id])
+        if message && message.has_plain?
+          content_type message.plain_part[:type], :charset => (message.plain_part[:charset] || "utf8")
+          message.plain_part[:body]
         else
           not_found
         end
       end
 
       get "/messages/:id.source" do
-        id = params[:id].to_i
-        if message = Mail.message(id)
+        if message = Mail.message(params[:id])
           content_type "text/plain"
-          message["source"]
+          message.source
         else
           not_found
         end
       end
 
       get "/messages/:id.eml" do
-        id = params[:id].to_i
-        if message = Mail.message(id)
+        if message = Mail.message(params[:id])
           content_type "message/rfc822"
-          message["source"]
+          message.source
         else
           not_found
         end
       end
 
       get "/messages/:id/parts/:cid" do
-        id = params[:id].to_i
-        if part = Mail.message_part_cid(id, params[:cid])
-          content_type part["type"], :charset => (part["charset"] || "utf8")
-          attachment part["filename"] if part["is_attachment"] == 1
-          body part["body"].to_s
+        message = Mail.message(params[:id])
+        if message && (part = message.cid_part(params[:cid]))
+          content_type part[:type], :charset => (part[:charset] || "utf8")
+          attachment part[:filename] if part[:is_attachment] == 1
+          body part[:body].to_s
         else
           not_found
         end
       end
 
       get "/messages/:id/analysis.?:format?" do
-        id = params[:id].to_i
-        if part = Mail.message_part_html(id)
+        message = Mail.message(params[:id])
+        if message && message.has_html?
           # TODO: Server-side cache? Make the browser cache based on message create time? Hmm.
           uri = URI.parse("http://api.getfractal.com/api/v2/validate#{"/format/#{params[:format]}" if params[:format].present?}")
-          response = Net::HTTP.post_form(uri, :api_key => "5c463877265251386f516f7428", :html => part["body"])
+          response = Net::HTTP.post_form(uri, :api_key => "5c463877265251386f516f7428", :html => message.html_part[:body])
           content_type ".#{params[:format]}" if params[:format].present?
           body response.body
         else
@@ -183,10 +180,7 @@ module MailCatcher
       end
 
       post '/messages/:id/mark-readed' do
-        id = params[:id].to_i
-
-        if Mail.message(id)
-          Mail.mark_readed(id)
+        if Mail.mark_readed(params[:id])
           status 204
         else
           not_found
@@ -194,9 +188,7 @@ module MailCatcher
       end
 
       delete "/messages/:id" do
-        id = params[:id].to_i
-        if message = Mail.message(id)
-          Mail.delete_message!(id)
+        if Mail.delete_message!(params[:id])
           status 204
         else
           not_found
