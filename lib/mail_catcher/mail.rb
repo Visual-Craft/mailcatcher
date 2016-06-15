@@ -32,7 +32,7 @@ module MailCatcher::Mail extend self
 
   def delete_by_owner!(owner)
     if owner.blank?
-      collection.find.delete_many
+      collection.find("owner" => nil).delete_many
     else
       collection.find("owner" => owner).delete_many
     end
