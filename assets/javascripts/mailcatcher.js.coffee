@@ -188,7 +188,6 @@ class MailCatcher
     $("#messages tbody tr").show()
 
   addMessage: (message) ->
-    console.log(message)
     $("<tr />").attr("data-message-id", message.id.toString())
       .addClass(if message.new == 1 then 'new' else '')
       .append($("<td/>").text(message.sender or "No sender").toggleClass("blank", !message.sender))
