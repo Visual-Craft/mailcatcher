@@ -12,15 +12,16 @@ module MailCatcher
           config.load_file!(file_path)
         end
         parser.on('-v', '--verbose', 'Be more verbose') do
-          config.verbose = true
+          config[:verbose] = true
         end
+
         parser.on('-h', '--help', 'Display this help information') do
           puts parser
           exit
         end
       end.parse!
 
-      MailCatcher.run!(config)
+      MailCatcher.run!(config.freeze)
     end
   end
 end

@@ -1,24 +1,9 @@
+require 'mail_catcher/utils'
+
 module MailCatcher
-  class Config
-    attr_accessor :options
-
+  class Config < Hash
     def initialize(opts = {})
-      @options = defaults.deep_merge(opts)
-    end
-
-    def load_file!(file_path)
-      opts = YAML::load_file(file_path)
-      @options.deep_merge!(opts) if opts
-    end
-
-    def verbose=(val)
-      @options[:verbose] = !!val
-    end
-
-    private
-
-    def defaults
-      @defaults ||= {
+      defaults = {
         :db => {
           :host => '127.0.0.1',
           :port => 27017,
@@ -36,6 +21,13 @@ module MailCatcher
         :password => nil,
         :users => nil,
       }
+      merge!(defaults.merge(opts))
+    end
+
+    def load_file!(file_path)
+      opts = YAML::load_file(file_path)
+      raise "Invalid config file '#{file_path}'" unless opts.is_a?(Hash)
+      merge!(MailCatcher::Utils.symbolize_hash_keys(opts))
     end
   end
 end

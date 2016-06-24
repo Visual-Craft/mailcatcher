@@ -21,16 +21,16 @@ require 'mail_catcher/config'
 
 module MailCatcher extend self
   def config
-    @@config
+    @config
   end
 
   def users
-    @@users
+    @users
   end
 
   def run!(config)
-    @@config = config.options
-    @@users = @@config[:users] ? Users.new(@@config[:users]) : nil
+    @config = config
+    @users = @config[:users] ? Users.new(@config[:users]) : nil
 
     # If we're running in the foreground sync the output.
     $stdout.sync = $stderr.sync = true
@@ -42,19 +42,19 @@ module MailCatcher extend self
 
     # One EventMachine loop...
     EventMachine.run do
-      smtp_url = "smtp://#{@@config[:smtp][:ip]}:#{@@config[:smtp][:port]}"
-      http_url = "http://#{@@config[:http][:ip]}:#{@@config[:http][:port]}"
+      smtp_url = "smtp://#{@config[:smtp][:ip]}:#{@config[:smtp][:port]}"
+      http_url = "http://#{@config[:http][:ip]}:#{@config[:http][:port]}"
 
       # Set up an SMTP server to run within EventMachine
-      rescue_port @@config[:smtp][:port] do
-        EventMachine.start_server @@config[:smtp][:ip], @@config[:smtp][:port], Smtp
+      rescue_port @config[:smtp][:port] do
+        EventMachine.start_server @config[:smtp][:ip], @config[:smtp][:port], Smtp
         puts "==> #{smtp_url}"
       end
 
       # Let Thin set itself up inside our EventMachine loop
       # (Skinny/WebSockets just works on the inside)
-      rescue_port @@config[:http][:port] do
-        Thin::Server.start(@@config[:http][:ip], @@config[:http][:port], Web)
+      rescue_port @config[:http][:port] do
+        Thin::Server.start(@config[:http][:ip], @config[:http][:port], Web)
         puts "==> #{http_url}"
       end
     end
