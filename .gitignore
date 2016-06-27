@@ -8,7 +8,6 @@
 # Generated documentation and assets
 /doc
 /public/assets
-/db
 
 # Build gems
 *.gem
