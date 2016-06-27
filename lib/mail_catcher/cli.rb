@@ -21,6 +21,10 @@ module MailCatcher
         end
       end.parse!
 
+      # If we're running in the foreground sync the output.
+      $stdout.sync = $stderr.sync = true
+
+      puts 'Starting MailCatcher'
       MailCatcher.run!(config.freeze)
     end
   end

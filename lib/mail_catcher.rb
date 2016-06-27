@@ -32,11 +32,6 @@ module MailCatcher extend self
     @config = config
     @users = @config[:users] ? Users.new(@config[:users]) : nil
 
-    # If we're running in the foreground sync the output.
-    $stdout.sync = $stderr.sync = true
-
-    puts "Starting MailCatcher"
-
     Thin::Logging.silent = (ENV["MAILCATCHER_ENV"] != "development")
     Smtp.parms = { :auth => :required }
 
