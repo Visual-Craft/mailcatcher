@@ -4,6 +4,7 @@ require "uri"
 
 require "sinatra"
 require "skinny"
+require 'json'
 
 require "mail_catcher/events"
 require "mail_catcher/mail"
@@ -53,14 +54,17 @@ module MailCatcher
 
       get "/messages" do
         content_type :json
-        Mail.messages.to_json
+        messages = Mail.messages.map { |v| v.to_h }
+        JSON.generate(messages)
       end
 
       get "/ws/messages" do
         if request.websocket?
           request.websocket!(
             :on_start => proc do |websocket|
-              subscription = Events::MessageAdded.subscribe { |message| websocket.send_message message.to_json }
+              subscription = Events::MessageAdded.subscribe do |message|
+                websocket.send_message(JSON.generate(message.to_h))
+              end
 
               # send ping responses to correctly work with forward proxies
               # which may close inactive connections after timeout
@@ -95,16 +99,14 @@ module MailCatcher
       get "/messages/:id.json" do
         if message = Mail.message(params[:id])
           content_type :json
-          message.to_h.merge({
-            formats: [
-              "source",
-              ("html" if message.has_html?),
-              ("plain" if message.has_plain?)
-            ].compact,
-            attachments: message.attachments.map do |attachment|
-              attachment.merge({ "href" => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
-            end,
-          }).to_json
+          hash = message.to_h
+          hash[:formats] = ['source']
+          hash[:formats] << 'html' if message.has_html?
+          hash[:formats] << 'plain' if message.has_plain?
+          hash[:attachments].map! do |attachment|
+            attachment.merge({ "href" => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
+          end
+          JSON.generate(hash)
         else
           not_found
         end
