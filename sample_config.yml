@@ -1,0 +1,17 @@
+db:
+  host: "127.0.0.1"
+  port: 27017
+  database: "mailcatcher"
+smtp:
+  ip: '127.0.0.1'
+  port: 1025
+http:
+  ip: '127.0.0.1'
+  port: 1080
+password: ~
+verbose: false
+users:
+  -
+    name: 'test'
+    password: '123'
+    owners: ~
