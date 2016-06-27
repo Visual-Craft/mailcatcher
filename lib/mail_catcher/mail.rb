@@ -28,20 +28,20 @@ module MailCatcher::Mail extend self
   end
 
   def delete!
-    collection.find.delete_many
+    collection.find.delete_many.n > 0
   end
 
   def delete_by_owner!(owner)
     owner = nil if owner.blank?
-    collection.find({ :owner => owner }).delete_many
+    collection.find({ :owner => owner }).delete_many.n > 0
   end
 
   def delete_message!(id)
-    collection.find({ :_id => to_bson_object_id(id) }).delete_one
+    collection.find({ :_id => to_bson_object_id(id) }).delete_one.n > 0
   end
 
   def mark_readed(id)
-    collection.find({ :_id => to_bson_object_id(id) }).update_one({ :$set => { :new => 0 } })
+    collection.find({ :_id => to_bson_object_id(id) }).update_one({ :$set => { :new => 0 } }).n > 0
   end
 
   private
