@@ -7,7 +7,7 @@ module MailCatcher
         :db => {
           :host => '127.0.0.1',
           :port => 27017,
-          :name => 'mailcatcher',
+          :database => 'mailcatcher',
         },
         :smtp => {
           :ip => '127.0.0.1',

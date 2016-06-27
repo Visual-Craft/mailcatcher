@@ -48,15 +48,13 @@ module MailCatcher::Mail extend self
 
   private
 
-  def config
-    @config ||= MailCatcher.config[:db]
-  end
-
   def db
-    #TODO: https://docs.mongodb.com/ecosystem/tutorial/ruby-driver-tutorial/
-    #TODO: MongoDB URI must be in the following format: mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-    #TODO: mongod --port 27017 --dbpath :PATH
-    @db ||= Mongo::Client.new(["#{config[:host]}:#{config[:port]}"], :database => config[:name])
+    @db ||= begin
+      options = MailCatcher.config[:db].clone
+      host = options.delete(:host)
+      port = options.delete(:port)
+      Mongo::Client.new(["#{host}:#{port}"], options)
+    end
   end
 
   def collection
