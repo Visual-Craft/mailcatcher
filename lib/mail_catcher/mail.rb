@@ -53,6 +53,13 @@ module MailCatcher::Mail extend self
       options = MailCatcher.config[:db].clone
       host = options.delete(:host)
       port = options.delete(:port)
+
+      Mongo::Logger.logger.level = if MailCatcher.env === 'development'
+        ::Logger::DEBUG
+      else
+        ::Logger::FATAL
+      end
+
       Mongo::Client.new(["#{host}:#{port}"], options)
     end
   end
