@@ -73,7 +73,7 @@ module MailCatcher
                 websocket.send_message('{}')
               end
 
-              websocket.on_close do |websocket|
+              websocket.on_close do
                 timer.cancel
                 Events::MessageAdded.unsubscribe subscription
               end
@@ -97,7 +97,9 @@ module MailCatcher
       end
 
       get "/messages/:id.json" do
-        if message = Mail.message(params[:id])
+        message = Mail.message(params[:id])
+
+        if message
           content_type :json
           hash = message.to_h
           hash[:formats] = ['source']
