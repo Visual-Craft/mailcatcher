@@ -6,7 +6,7 @@ module MailCatcher
     def run!
       config = Config.new
       OptionParser.new do |parser|
-        parser.banner = "Usage: mailcatcher [options]"
+        parser.banner = 'Usage: mailcatcher [options]'
         parser.version = MailCatcher::VERSION
         parser.on('-c FILE_PATH', '--config FILE_PATH', 'Set config') do |file_path|
           config.load_file!(file_path)

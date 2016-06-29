@@ -1,4 +1,4 @@
-require "eventmachine"
+require 'eventmachine'
 
 module MailCatcher
   module Events

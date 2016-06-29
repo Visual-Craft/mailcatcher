@@ -1,6 +1,12 @@
-require "optparse"
-require "eventmachine"
-require "thin"
+require 'optparse'
+require 'eventmachine'
+require 'thin'
+require 'mail_catcher/events'
+require 'mail_catcher/mail'
+require 'mail_catcher/smtp'
+require 'mail_catcher/web'
+require 'mail_catcher/users'
+require 'mail_catcher/config'
 
 module EventMachine
   # Monkey patch fix for 10deb4
@@ -9,14 +15,6 @@ module EventMachine
     (@reactor_running || false)
   end
 end
-
-require "mail_catcher/events"
-require "mail_catcher/mail"
-require "mail_catcher/smtp"
-require "mail_catcher/web"
-require "mail_catcher/version"
-require 'mail_catcher/users'
-require 'mail_catcher/config'
 
 module MailCatcher extend self
   def config

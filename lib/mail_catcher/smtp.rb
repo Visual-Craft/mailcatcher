@@ -1,6 +1,5 @@
-require "eventmachine"
-
-require "mail_catcher/mail"
+require 'eventmachine'
+require 'mail_catcher/mail'
 
 class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   # We override EM's mail from processing to allow multiple mail-from commands
@@ -35,7 +34,7 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   end
 
   def receive_data_chunk(lines)
-    current_message[:source] ||= ""
+    current_message[:source] ||= ''
     lines.each do |line|
       current_message[:source] << line << "\r\n"
     end
@@ -56,11 +55,11 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   rescue Exception => e
     puts "*** Error receiving message: #{current_message.inspect}"
     puts "    Exception: #{e.class}: #{e.message}"
-    puts "    Backtrace:"
+    puts '    Backtrace:'
     $!.backtrace.each do |line|
       puts "       #{line}"
     end
-    puts "    Please submit this as an issue at http://github.com/sj26/mailcatcher/issues"
+    puts '    Please submit this as an issue at http://github.com/sj26/mailcatcher/issues'
     false
   ensure
     @current_message = nil
@@ -76,7 +75,7 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   end
 
   def process_data_line ln
-    if ln == "."
+    if ln == '.'
       if @databuffer.length > 0
         receive_data_chunk @databuffer
         @databuffer.clear

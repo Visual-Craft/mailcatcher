@@ -6,7 +6,7 @@ module MailCatcher
       @users = []
       config.each do |item|
         @users << User.new.tap do |user|
-          raise "Invalid user in config" if item['name'].blank?
+          raise 'Invalid user in config' if item['name'].blank?
           raise "Duplicate user name #{item['name']} in config" if find_by_name(item['name'].to_s)
 
           user.name = item['name'].to_s

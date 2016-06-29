@@ -1,13 +1,11 @@
-require "pathname"
-require "net/http"
-require "uri"
-
-require "sinatra"
-require "skinny"
+require 'pathname'
+require 'net/http'
+require 'uri'
+require 'sinatra'
+require 'skinny'
 require 'json'
-
-require "mail_catcher/events"
-require "mail_catcher/mail"
+require 'mail_catcher/events'
+require 'mail_catcher/mail'
 
 class Sinatra::Request
   include Skinny::Helpers
@@ -16,17 +14,17 @@ end
 module MailCatcher
   module Web
     class Application < Sinatra::Base
-      set :development, ENV["MAILCATCHER_ENV"] == "development"
+      set :development, MailCatcher.env == 'development'
       set :root, File.expand_path("#{__FILE__}/../../../..")
 
       if development?
-        require "sprockets-helpers"
+        require 'sprockets-helpers'
 
         configure do
-          require "mail_catcher/web/assets"
+          require 'mail_catcher/web/assets'
           Sprockets::Helpers.configure do |config|
             config.environment = Assets
-            config.prefix      = "/assets"
+            config.prefix      = '/assets'
             config.digest      = false
             config.public_path = public_folder
             config.debug       = true
@@ -48,17 +46,17 @@ module MailCatcher
         end
       end
 
-      get "/" do
+      get '/' do
         erb :index
       end
 
-      get "/messages" do
+      get '/messages' do
         content_type :json
         messages = Mail.messages.map { |v| v.to_h }
         JSON.generate(messages)
       end
 
-      get "/ws/messages" do
+      get '/ws/messages' do
         if request.websocket?
           request.websocket!(
             :on_start => proc do |websocket|
@@ -84,7 +82,7 @@ module MailCatcher
         end
       end
 
-      delete "/messages" do
+      delete '/messages' do
         owner = params[:owner]
 
         if owner.nil?
@@ -96,7 +94,7 @@ module MailCatcher
         status 204
       end
 
-      get "/messages/:id.json" do
+      get '/messages/:id.json' do
         message = Mail.message(params[:id])
 
         if message
@@ -106,7 +104,7 @@ module MailCatcher
           hash[:formats] << 'html' if message.has_html?
           hash[:formats] << 'plain' if message.has_plain?
           hash[:attachments].map! do |attachment|
-            attachment.merge({ "href" => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
+            attachment.merge({ 'href' => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
           end
           JSON.generate(hash)
         else
@@ -114,10 +112,10 @@ module MailCatcher
         end
       end
 
-      get "/messages/:id.html" do
+      get '/messages/:id.html' do
         message = Mail.message(params[:id])
         if message && message.has_html?
-          content_type :html, :charset => (message.html_part[:charset] || "utf8")
+          content_type :html, :charset => (message.html_part[:charset] || 'utf8')
 
           body = message.html_part[:body]
 
@@ -130,38 +128,38 @@ module MailCatcher
         end
       end
 
-      get "/messages/:id.plain" do
+      get '/messages/:id.plain' do
         message = Mail.message(params[:id])
         if message && message.has_plain?
-          content_type message.plain_part[:type], :charset => (message.plain_part[:charset] || "utf8")
+          content_type message.plain_part[:type], :charset => (message.plain_part[:charset] || 'utf8')
           message.plain_part[:body]
         else
           not_found
         end
       end
 
-      get "/messages/:id.source" do
+      get '/messages/:id.source' do
         if message = Mail.message(params[:id])
-          content_type "text/plain"
+          content_type 'text/plain'
           message.source
         else
           not_found
         end
       end
 
-      get "/messages/:id.eml" do
+      get '/messages/:id.eml' do
         if message = Mail.message(params[:id])
-          content_type "message/rfc822"
+          content_type 'message/rfc822'
           message.source
         else
           not_found
         end
       end
 
-      get "/messages/:id/parts/:cid" do
+      get '/messages/:id/parts/:cid' do
         message = Mail.message(params[:id])
         if message && (part = message.cid_part(params[:cid]))
-          content_type part[:type], :charset => (part[:charset] || "utf8")
+          content_type part[:type], :charset => (part[:charset] || 'utf8')
           attachment part[:filename] if part[:is_attachment] == 1
           body part[:body].to_s
         else
@@ -177,7 +175,7 @@ module MailCatcher
         end
       end
 
-      delete "/messages/:id" do
+      delete '/messages/:id' do
         if Mail.delete_message!(params[:id])
           status 204
         else
@@ -186,7 +184,7 @@ module MailCatcher
       end
 
       not_found do
-        erb :"404"
+        erb :'404'
       end
     end
   end
