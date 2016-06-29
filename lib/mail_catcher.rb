@@ -59,7 +59,7 @@ module MailCatcher extend self
 
 protected
 
-  def rescue_port port
+  def rescue_port(port)
     begin
       yield
 

@@ -4,7 +4,7 @@ require 'mail_catcher/mail'
 class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   # We override EM's mail from processing to allow multiple mail-from commands
   # per [RFC 2821](http://tools.ietf.org/html/rfc2821#section-4.1.1.2)
-  def process_mail_from sender
+  def process_mail_from(sender)
     if @state.include? :mail_from
       @state -= [:mail_from, :rcpt, :data]
       receive_reset
@@ -74,7 +74,7 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
     receive_transaction unless keep_auth
   end
 
-  def process_data_line ln
+  def process_data_line(ln)
     if ln == '.'
       if @databuffer.length > 0
         receive_data_chunk @databuffer
