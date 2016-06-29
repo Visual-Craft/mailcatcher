@@ -1,5 +1,6 @@
 require 'mail_catcher'
 require 'mail_catcher/config'
+require 'mail_catcher/version'
 
 module MailCatcher
   module Cli extend self
