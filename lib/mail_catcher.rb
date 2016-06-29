@@ -26,13 +26,12 @@ module MailCatcher extend self
   end
 
   def env
-    @env
+    @env ||= (ENV['MAILCATCHER_ENV'] || 'production')
   end
 
   def run!(config)
     @config = config
     @users = @config[:users] ? Users.new(@config[:users]) : nil
-    @env = ENV['MAILCATCHER_ENV'] || 'production'
 
     Thin::Logging.silent = (env != 'development')
     Smtp.parms = { :auth => :required }
