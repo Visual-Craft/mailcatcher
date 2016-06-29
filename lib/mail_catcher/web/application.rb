@@ -139,7 +139,9 @@ module MailCatcher
       end
 
       get '/messages/:id.source' do
-        if message = Mail.message(params[:id])
+        message = Mail.message(params[:id])
+
+        if message
           content_type 'text/plain'
           message.source
         else
@@ -148,7 +150,9 @@ module MailCatcher
       end
 
       get '/messages/:id.eml' do
-        if message = Mail.message(params[:id])
+        message = Mail.message(params[:id])
+
+        if message
           content_type 'message/rfc822'
           message.source
         else
