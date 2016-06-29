@@ -4,7 +4,7 @@ require 'thin'
 require 'mail_catcher/events'
 require 'mail_catcher/mail'
 require 'mail_catcher/smtp'
-require 'mail_catcher/web'
+require 'mail_catcher/web_application'
 require 'mail_catcher/users'
 require 'mail_catcher/config'
 
@@ -54,7 +54,7 @@ module MailCatcher extend self
       # Let Thin set itself up inside our EventMachine loop
       # (Skinny/WebSockets just works on the inside)
       rescue_port @config[:http][:port] do
-        Thin::Server.start(@config[:http][:ip], @config[:http][:port], Web)
+        Thin::Server.start(@config[:http][:ip], @config[:http][:port], WebApplication)
         puts "==> #{http_url}"
       end
     end
