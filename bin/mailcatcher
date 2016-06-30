@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'mail_catcher/cli'
+require 'mail_catcher'
 
-MailCatcher::Cli.run!
+MailCatcher.run!

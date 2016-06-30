@@ -7,6 +7,7 @@ require 'mail_catcher/smtp'
 require 'mail_catcher/web_application'
 require 'mail_catcher/users'
 require 'mail_catcher/config'
+require 'mail_catcher/version'
 
 module EventMachine
   # Monkey patch fix for 10deb4
@@ -18,7 +19,27 @@ end
 
 module MailCatcher extend self
   def config
-    @config
+    @config ||= begin
+      config = Config.new
+
+      OptionParser.new do |parser|
+        parser.banner = 'Usage: mailcatcher [options]'
+        parser.version = MailCatcher::VERSION
+        parser.on('-c FILE_PATH', '--config FILE_PATH', 'Set config') do |file_path|
+          config.load_file!(file_path)
+        end
+        parser.on('-v', '--verbose', 'Be more verbose') do
+          config[:verbose] = true
+        end
+
+        parser.on('-h', '--help', 'Display this help information') do
+          puts parser
+          exit
+        end
+      end.parse!
+
+      config.freeze
+    end
   end
 
   def users
@@ -33,29 +54,29 @@ module MailCatcher extend self
     @root_dir ||= File.expand_path('..', File.dirname(__FILE__))
   end
 
-  def run!(config)
-    @config = config
-    @users = @config[:users] ? Users.new(@config[:users]) : nil
+  def run!
+    # If we're running in the foreground sync the output.
+    $stdout.sync = $stderr.sync = true
+
+    puts 'Starting MailCatcher'
+    @users = config[:users] ? Users.new(config[:users]) : nil
 
     Thin::Logging.silent = (env != 'development')
     Smtp.parms = { :auth => :required }
 
     # One EventMachine loop...
     EventMachine.run do
-      smtp_url = "smtp://#{@config[:smtp][:ip]}:#{@config[:smtp][:port]}"
-      http_url = "http://#{@config[:http][:ip]}:#{@config[:http][:port]}"
-
       # Set up an SMTP server to run within EventMachine
-      rescue_port @config[:smtp][:port] do
-        EventMachine.start_server @config[:smtp][:ip], @config[:smtp][:port], Smtp
-        puts "==> #{smtp_url}"
+      rescue_port config[:smtp][:port] do
+        EventMachine.start_server(config[:smtp][:ip], config[:smtp][:port], Smtp)
+        puts "==> smtp://#{config[:smtp][:ip]}:#{config[:smtp][:port]}"
       end
 
       # Let Thin set itself up inside our EventMachine loop
       # (Skinny/WebSockets just works on the inside)
-      rescue_port @config[:http][:port] do
-        Thin::Server.start(@config[:http][:ip], @config[:http][:port], WebApplication)
-        puts "==> #{http_url}"
+      rescue_port config[:http][:port] do
+        Thin::Server.start(config[:http][:ip], config[:http][:port], WebApplication)
+        puts "==> http://#{config[:http][:ip]}:#{config[:http][:port]}"
       end
     end
   end
