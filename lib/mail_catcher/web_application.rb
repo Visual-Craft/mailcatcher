@@ -213,7 +213,7 @@ module MailCatcher
     end
 
     not_found do
-      erb :'404'
+      'Not Found'
     end
   end
 end
