@@ -18,48 +18,37 @@ module EventMachine
 end
 
 module MailCatcher extend self
-  def config
-    @config ||= begin
-      config = Config.new
-
-      OptionParser.new do |parser|
-        parser.banner = 'Usage: mailcatcher [options]'
-        parser.version = MailCatcher::VERSION
-        parser.on('-c FILE_PATH', '--config FILE_PATH', 'Set config') do |file_path|
-          config.load_file!(file_path)
-        end
-        parser.on('-v', '--verbose', 'Be more verbose') do
-          config[:verbose] = true
-        end
-
-        parser.on('-h', '--help', 'Display this help information') do
-          puts parser
-          exit
-        end
-      end.parse!
-
-      config.freeze
-    end
-  end
-
-  def users
-    @users
-  end
-
-  def env
-    @env ||= (ENV['MAILCATCHER_ENV'] || 'production')
-  end
-
-  def root_dir
-    @root_dir ||= File.expand_path('..', File.dirname(__FILE__))
-  end
+  attr_reader :config, :users, :env, :root_dir
 
   def run!
+    @config = Config.new
+
+    OptionParser.new do |parser|
+      parser.banner = 'Usage: mailcatcher [options]'
+      parser.version = MailCatcher::VERSION
+      parser.on('-c FILE_PATH', '--config FILE_PATH', 'Set config') do |file_path|
+        config.load_file!(file_path)
+      end
+      parser.on('-v', '--verbose', 'Be more verbose') do
+        config[:verbose] = true
+      end
+
+      parser.on('-h', '--help', 'Display this help information') do
+        puts parser
+        exit
+      end
+    end.parse!
+
+    config.freeze
+
     # If we're running in the foreground sync the output.
     $stdout.sync = $stderr.sync = true
 
     puts 'Starting MailCatcher'
+
     @users = config[:users] ? Users.new(config[:users]) : nil
+    @env = (ENV['MAILCATCHER_ENV'] || 'production')
+    @root_dir = File.expand_path('..', File.dirname(__FILE__))
 
     Thin::Logging.silent = (env != 'development')
     Smtp.parms = { :auth => :required }
