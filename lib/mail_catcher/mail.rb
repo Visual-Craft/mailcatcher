@@ -18,12 +18,16 @@ module MailCatcher::Mail extend self
   end
 
   def message(id)
-    doc = collection.find({ :_id => to_bson_object_id(id) }).limit(1).first
-
-    if doc.nil?
+    if (id = to_bson_object_id(id)).nil?
       nil
     else
-      MailCatcher::Message.from_mongo(doc)
+      doc = collection.find({ :_id => id }).limit(1).first
+
+      if doc.nil?
+        nil
+      else
+        MailCatcher::Message.from_mongo(doc)
+      end
     end
   end
 
@@ -37,11 +41,19 @@ module MailCatcher::Mail extend self
   end
 
   def delete_message!(id)
-    collection.find({ :_id => to_bson_object_id(id) }).delete_one.n > 0
+    if (id = to_bson_object_id(id)).nil?
+      false
+    else
+      collection.find({ :_id => id }).delete_one.n > 0
+    end
   end
 
   def mark_readed(id)
-    collection.find({ :_id => to_bson_object_id(id) }).update_one({ :$set => { :new => 0 } }).n > 0
+    if (id = to_bson_object_id(id)).nil?
+      false
+    else
+      collection.find({ :_id => id }).update_one({ :$set => { :new => 0 } }).n > 0
+    end
   end
 
   private
@@ -69,7 +81,7 @@ module MailCatcher::Mail extend self
   def to_bson_object_id(val)
     begin
       BSON::ObjectId(val)
-    rescue BSON::ObjectId::Invalid
+    rescue
       nil
     end
   end
