@@ -2,30 +2,62 @@ require 'mail_catcher/user'
 
 module MailCatcher
   class Users
+    def no_auth?
+      @no_auth
+    end
+
     def initialize(config)
       @users = []
-      config.each do |item|
-        @users << User.new.tap do |user|
-          raise 'Invalid user in config' if item['name'].blank?
-          raise "Duplicate user name #{item['name']} in config" if find_by_name(item['name'].to_s)
+      @no_auth = config.nil?
 
-          user.name = item['name'].to_s
-          user.password = item['password'].to_s
-          user.owners = item['owners'] ? [item['owners']].flatten.reject(&:empty?).map(&:to_s) : nil
+      return if @no_auth
+
+      names = {}
+
+      unless config.is_a?(Array) && !config.empty?
+        raise 'Invalid users configuration, it should be array of users and have at least one element'
+      end
+
+      config.each_with_index do |item, index|
+        name = item[:name].to_s
+        password = item[:password].to_s
+        raise "Missing name for user at index \##{index}" if name.empty?
+        raise "Duplicate user name '#{name}' at index \##{index}" if names.has_key?(name)
+        raise "Missing password for user '#{name}' at index \##{index}" if password.empty?
+        names[name] = true
+
+        if item[:owners].nil?
+          owners = nil
+        else
+          owners = item[:owners].is_a?(Array) ? item[:owners] : [item[:owners]]
+          owners.reject(&:nil?).map(&:to_s).uniq
+        end
+
+        if owners.is_a?(Array) && owners.empty?
+          raise "Invalid owners for user '#{name}' at index \##{index}, it should be nil or array with at least one element"
+        end
+
+        @users << User.new.tap do |user|
+          user.name = name
+          user.password = password
+          user.owners = begin
+            if item[:owners].nil?
+              nil
+            else
+              owners = item[:owners].is_a?(Array) ? item[:owners] : [item[:owners]]
+              owners.reject(&:nil?).map(&:to_s).uniq
+            end
+          end
         end
       end
     end
 
-    def find_by_name(name)
+    def find(name)
       @users.detect { |user| name == user.name }
     end
 
     def all
       @users
-    end
-
-    def exists?
-      @users.present?
     end
   end
 end

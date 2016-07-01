@@ -46,7 +46,7 @@ module MailCatcher extend self
 
     puts 'Starting MailCatcher'
 
-    @users = config[:users] ? Users.new(config[:users]) : nil
+    @users = Users.new(config[:users])
     @env = (ENV['MAILCATCHER_ENV'] || 'production')
     @root_dir = File.expand_path('..', File.dirname(__FILE__))
 
