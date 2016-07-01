@@ -1,7 +1,5 @@
-#= require modernizr
 #= require jquery
 #= require date
-#= require flexie
 #= require keymaster
 #= require underscore
 
