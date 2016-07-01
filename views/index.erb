@@ -4,14 +4,14 @@
   <title>MailCatcher</title>
   <link href="/favicon.ico" rel="icon" />
   <%= stylesheet_tag "mailcatcher" %>
-  <%= javascript_tag "mailcatcher" %>
 </head>
-<body>
+<body id="mc-app">
+
   <header>
     <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
     <nav class="app">
       <ul>
-        <li class="search"><input type="search" name="search" placeholder="Search messages..." incremental="true" /></li>
+        <li class="search"><input type="search" placeholder="Search messages..." incremental="true" v-model="search" /></li>
       </ul>
     </nav>
   </header>
@@ -20,6 +20,14 @@
       <td class="folders">
         <div class="folders-wrapper">
           <ul>
+            <li class="noselect" v-bind:class="{ 'selected': selectedOwner === null }">
+              <span v-on:click="selectOwner(null)">All ({{ messages.length }})</span>
+              <span class="clear-folder" v-on:click="clearMessages(null)">Clear</span>
+            </li>
+            <li v-for="(owner_name, messages_count) in owners" class="noselect" v-bind:class="{ 'selected': selectedOwner === owner_name }">
+              <span v-on:click="selectOwner(owner_name)">{{ owner_name || "No owner" }} ({{ messages_count }})</span>
+              <span class="clear-folder" v-on:click="clearMessages(owner_name)">Clear</span>
+            </li>
           </ul>
         </div>
       </td>
@@ -34,38 +42,50 @@
               <th>Received</th>
             </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                <tr v-for="message in messages | filterBy filterMessage" track-by="id" v-bind:class="{ 'new': message.new, 'selected': message.selected }" v-on:click="selectMessage(message)">
+                  <td v-bind:class="{ 'blank': !message.sender }">{{ message.sender || "No sender" }}</td>
+                  <td v-bind:class="{ 'blank': !message.recipients || !message.recipients.length }">{{ (message.recipients || []).join(", ") || "No receipients" }}</td>
+                  <td v-bind:class="{ 'blank': !message.subject }">{{ message.subject || "No subject" }}</td>
+                  <td>{{ message.created_at | moment "dddd, d MMM Y HH:mm:ss" }}</td>
+                </tr>
+            </tbody>
           </table>
         </nav>
       </td>
     </tr>
   </table>
   <div id="resizer"><div class="ruler"></div></div>
-  <article id="message">
+  <article id="message" v-if="selectedMessage">
     <header>
       <dl class="metadata">
         <dt class="created_at">Received</dt>
-        <dd class="created_at"></dd>
+        <dd class="created_at">{{ selectedMessage.created_at | moment "dddd, d MMM Y HH:mm:ss" }}</dd>
         <dt class="from">From</dt>
-        <dd class="from"></dd>
+        <dd class="from">{{ selectedMessage.sender || "No sender" }}</dd>
         <dt class="to">To</dt>
-        <dd class="to"></dd>
+        <dd class="to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</dd>
         <dt class="subject">Subject</dt>
-        <dd class="subject"></dd>
+        <dd class="subject">{{ selectedMessage.subject || "No subject" }}</dd>
         <dt class="attachments">Attachments</dt>
         <dd class="attachments"></dd>
       </dl>
       <nav class="views">
         <ul>
-          <li class="format tab html selected" data-message-format="html"><a href="#">HTML</a></li>
-          <li class="format tab plain" data-message-format="plain"><a href="#">Plain Text</a></li>
-          <li class="format tab source" data-message-format="source"><a href="#">Source</a></li>
-          <li class="action download" data-message-format="html"><a href="#" class="button"><span>Download</span></a></li>
+          <li class="format tab" v-for="part in selectedMessage.parts"><a href="#">{{ contentTypeName(part.type) }}</a></li>
+          <li class="format tab"><a href="#">Source</a></li>
+          <!--<li class="format tab html selected" data-message-format="html"><a href="#">HTML</a></li>-->
+          <!--<li class="format tab plain" data-message-format="plain"><a href="#">Plain Text</a></li>-->
+          <!--<li class="format tab source" data-message-format="source"><a href="#">Source</a></li>-->
+          <li class="action download" data-message-format="html"><a href="{{ downloadUrl(selectedMessage) }}" class="button"><span>Download</span></a></li>
           <li class="action delete"><a href="#" class="button"><span>Delete</span></a></li>
         </ul>
       </nav>
     </header>
-    <iframe class="body"></iframe>
+    <!--<iframe class="body"></iframe>-->
   </article>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <%= javascript_tag "mailcatcher" %>
 </body>
 </html>
