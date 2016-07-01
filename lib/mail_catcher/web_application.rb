@@ -75,7 +75,7 @@ module MailCatcher
       erb :index
     end
 
-    get '/messages' do
+    get '/api/messages' do
       content_type :json
       messages = Mail.messages.map { |v| v.to_h }
       JSON.generate(messages)
@@ -107,7 +107,7 @@ module MailCatcher
       end
     end
 
-    delete '/messages' do
+    delete '/api/messages' do
       owner = params[:owner]
 
       if owner.nil?
@@ -119,7 +119,7 @@ module MailCatcher
       status 204
     end
 
-    get '/messages/:id.json' do
+    get '/api/messages/:id.json' do
       message = Mail.message(params[:id])
 
       if message
@@ -137,7 +137,7 @@ module MailCatcher
       end
     end
 
-    get '/messages/:id.html' do
+    get '/api/messages/:id.html' do
       message = Mail.message(params[:id])
       if message && message.has_html?
         content_type :html, :charset => (message.html_part[:charset] || 'utf8')
@@ -153,7 +153,7 @@ module MailCatcher
       end
     end
 
-    get '/messages/:id.plain' do
+    get '/api/messages/:id.plain' do
       message = Mail.message(params[:id])
       if message && message.has_plain?
         content_type message.plain_part[:type], :charset => (message.plain_part[:charset] || 'utf8')
@@ -163,7 +163,7 @@ module MailCatcher
       end
     end
 
-    get '/messages/:id.source' do
+    get '/api/messages/:id.source' do
       message = Mail.message(params[:id])
 
       if message
@@ -174,7 +174,7 @@ module MailCatcher
       end
     end
 
-    get '/messages/:id.eml' do
+    get '/api/messages/:id.eml' do
       message = Mail.message(params[:id])
 
       if message
@@ -185,7 +185,7 @@ module MailCatcher
       end
     end
 
-    get '/messages/:id/parts/:cid' do
+    get '/api/messages/:id/parts/:cid' do
       message = Mail.message(params[:id])
       if message && (part = message.cid_part(params[:cid]))
         content_type part[:type], :charset => (part[:charset] || 'utf8')
@@ -196,7 +196,7 @@ module MailCatcher
       end
     end
 
-    post '/messages/:id/mark-readed' do
+    post '/api/messages/:id/mark-readed' do
       if Mail.mark_readed(params[:id])
         status 204
       else
@@ -204,7 +204,7 @@ module MailCatcher
       end
     end
 
-    delete '/messages/:id' do
+    delete '/api/messages/:id' do
       if Mail.delete_message!(params[:id])
         status 204
       else
