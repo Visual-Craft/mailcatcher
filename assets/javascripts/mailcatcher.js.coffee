@@ -53,6 +53,7 @@ class MailCatcher
         selectedOwner: null
         search: ''
         selectedMessage: null
+        selectedPart: null
 
       watch:
         'messages': (messages, oldMessages) ->
@@ -80,6 +81,15 @@ class MailCatcher
               $.post("/api/messages/#{message.id}/mark-readed", {}, () ->
                 message.new = 0
               )
+
+            this.selectedPart = message.parts[0]
+          else
+            this.selectedPart = null
+
+        'selectedPart': (part) ->
+          if this.selectedMessage && part
+            body = $('iframe.body').contents().find("body")
+            body.html(part.body);
 
       methods:
         selectMessage: (message) ->
@@ -194,8 +204,11 @@ class MailCatcher
             if overflow > 0
               $("#messages").scrollTop($("#messages").scrollTop() + overflow + 20)
 
-        currentMessageContentLoad: (event) ->
+        selectPart: (part) ->
+          this.selectedPart = part
 
+        isPartSelected: (part) ->
+          this.selectedPart and this.selectedPart.type == part.type
 
       computed:
         owners: () ->
