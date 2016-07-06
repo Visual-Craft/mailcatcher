@@ -42,8 +42,7 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   end
 
   def receive_plain_auth(user, password)
-    user = user.to_s.strip
-    @owner = user.empty? ? nil : user
+    @owner = user.to_s.strip
     MailCatcher.config[:password].nil? || MailCatcher.config[:password] === password
   end
 
