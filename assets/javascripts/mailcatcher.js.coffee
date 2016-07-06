@@ -45,6 +45,7 @@ Vue.filter('moment', (value, format) ->
 
 class MailCatcher
   constructor: () ->
+    mc = this
     @vm = new Vue(
       el: '#mc-app'
 
@@ -135,7 +136,7 @@ class MailCatcher
               url: "/api/messages#{params}"
               type: "DELETE"
               success: =>
-
+                mc.loadMessages()
               error: ->
                 alert "Error while clearing messages."
 
