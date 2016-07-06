@@ -211,14 +211,43 @@ class MailCatcher
           this.selectedPart and this.selectedPart.type == part.type
 
       computed:
-        owners: () ->
-          result = {}
+        folders: () ->
+          result = []
+          owners = {}
+          addFolder = (name, owner, count) -> result.push({ name: name, owner: owner, count: count })
+
+          addFolder('! All', null, this.messages.length)
+
+          unless this.messages.length
+            return result
+
           for k,v of this.messages
-            if result[v.owner]
-              result[v.owner]++
+            if owners[v.owner]
+              owners[v.owner]++
             else
-              result[v.owner] = 1
-          result
+              owners[v.owner] = 1
+
+          for k,v of owners
+            addFolder(k || '! No owner', k, v)
+
+          ownersNames = _.keys(owners).sort()
+          ownersPriority = {}
+
+          for v,index in ownersNames
+            ownersPriority[v] = index
+
+          result.sort((a, b) ->
+            if a.owner == null
+              -1
+            else if a.owner == ''
+              -1
+            else if a.owner == b.owner
+              0
+            else if ownersPriority[a.owner] < ownersPriority[b.owner]
+              -1
+            else
+              1
+          )
     )
 
     key "up", =>

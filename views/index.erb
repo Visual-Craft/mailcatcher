@@ -20,13 +20,9 @@
       <td class="folders">
         <div class="folders-wrapper">
           <ul>
-            <li class="noselect" v-bind:class="{ 'selected': selectedOwner === null }">
-              <span v-on:click="selectOwner(null)">All ({{ messages.length }})</span>
-              <span class="clear-folder" v-on:click="clearMessages(null)">Clear</span>
-            </li>
-            <li v-for="(owner_name, messages_count) in owners" class="noselect" v-bind:class="{ 'selected': selectedOwner === owner_name }">
-              <span v-on:click="selectOwner(owner_name)">{{ owner_name || "No owner" }} ({{ messages_count }})</span>
-              <span class="clear-folder" v-on:click="clearMessages(owner_name)">Clear</span>
+            <li v-for="folder in folders" class="noselect" v-bind:class="{ 'selected': selectedOwner === folder.owner }">
+              <span v-on:click="selectOwner(folder.owner)">{{ folder.name }} ({{ folder.count }})</span>
+              <span class="clear-folder" v-if="folder.count > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
             </li>
           </ul>
         </div>
