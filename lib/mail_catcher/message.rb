@@ -15,7 +15,6 @@ module MailCatcher
     define_field :created_at, nil
     define_field :attachments, []
     define_field :parts, []
-    define_field :formats, []
 
     class << self
       def from_raw(data)
@@ -29,17 +28,23 @@ module MailCatcher
           size: data[:source].length,
           new: 1,
           created_at: Time.now,
-          formats: [:source],
+          parts: {},
+          attachments: {},
         }
 
         parts = mail.all_parts
         parts = [mail] if parts.empty?
+        part_ids = {
+            :attachments => 0,
+            :parts => 0,
+        }
         parts.each do |part|
           body = part.body.to_s
           type = part.mime_type || 'text/plain'
           part_key = part.attachment? ? :attachments : :parts
-          processed_data[part_key] ||= []
-          processed_data[part_key] << {
+          part_id = part_ids[part_key].to_s.to_sym
+          processed_data[part_key][part_id] = {
+            id: part_id,
             cid: part.respond_to?(:cid) ? part.cid : nil,
             type: type,
             filename: part.filename,
@@ -47,6 +52,7 @@ module MailCatcher
             body: body,
             size: body.length,
           }
+          part_ids[part_key] += 1
         end
 
         from_h(processed_data)
