@@ -87,11 +87,6 @@ class MailCatcher
           else
             this.selectedPart = null
 
-        'selectedPart': (part) ->
-          if this.selectedMessage && part
-            body = $('iframe.body').contents().find("body")
-            body.html(part.body);
-
       methods:
         selectMessage: (message) ->
           this.selectedMessage = message
@@ -210,6 +205,11 @@ class MailCatcher
 
         isPartSelected: (part) ->
           this.selectedPart and this.selectedPart.type == part.type
+
+        displaySelectedPart: () ->
+          if this.selectedPart
+            body = $('#message iframe.body').contents().find("body")
+            body.html(this.selectedPart.body)
 
       computed:
         folders: () ->
