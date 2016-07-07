@@ -14,7 +14,7 @@ module MailCatcher::Mail extend self
   end
 
   def messages
-    collection.find.map { |doc| MailCatcher::Message.from_mongo(doc) }
+    collection.find.sort(:created_at => -1).map { |doc| MailCatcher::Message.from_mongo(doc) }
   end
 
   def message(id)
