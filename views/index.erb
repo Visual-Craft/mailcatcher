@@ -68,14 +68,13 @@
       </dl>
       <nav class="views">
         <ul>
-          <li class="format tab" v-for="part in selectedMessage.parts" v-bind:class="{ 'selected': isPartSelected(part) }" v-on:click="selectPart(part)"><a href="#">{{ contentTypeName(part.type) }}</a></li>
-          <li class="format tab"><a href="#">Source</a></li>
+          <li class="format tab" v-for="presentation in presentations" v-bind:class="{ 'selected': isPresentationSelected(presentation) }" v-on:click="selectPresentation(presentation)"><a href="#">{{ presentation.name }}</a></li>
           <li class="action download" data-message-format="html"><a href="{{ downloadUrl(selectedMessage) }}" class="button"><span>Download</span></a></li>
           <li class="action delete"><a href="#" class="button" v-on:click="deleteMessage(selectedMessage)"><span>Delete</span></a></li>
         </ul>
       </nav>
     </header>
-    <iframe class="body" v-if="selectedPart" v-on:load="displaySelectedPart"></iframe>
+    <iframe class="body" v-if="selectedPresentation">{{ displaySelectedPresentation }}</iframe>
   </article>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>

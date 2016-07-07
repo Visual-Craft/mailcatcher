@@ -54,7 +54,7 @@ class MailCatcher
         selectedOwner: null
         search: ''
         selectedMessage: null
-        selectedPart: null
+        selectedPresentation: null
 
       watch:
         'messages': (messages, oldMessages) ->
@@ -83,9 +83,9 @@ class MailCatcher
                 message.new = 0
               )
 
-            this.selectedPart = message.parts[0]
+            this.selectedPresentation = this.presentations[0]
           else
-            this.selectedPart = null
+            this.selectedPresentation = null
 
       methods:
         selectMessage: (message) ->
@@ -200,16 +200,16 @@ class MailCatcher
             if overflow > 0
               $("#messages").scrollTop($("#messages").scrollTop() + overflow + 20)
 
-        selectPart: (part) ->
-          this.selectedPart = part
+        selectPresentation: (presentation) ->
+          this.selectedPresentation = presentation
 
-        isPartSelected: (part) ->
-          this.selectedPart and this.selectedPart.type == part.type
+        isPresentationSelected: (presentation) ->
+          this.selectedPresentation and this.selectedPresentation.type == presentation.type
 
-        displaySelectedPart: () ->
-          if this.selectedPart
+        displaySelectedPresentation: () ->
+          if this.selectedPresentation
             body = $('#message iframe.body').contents().find("body")
-            body.html(this.selectedPart.body)
+            body.html(this.selectedPresentation.text)
 
       computed:
         folders: () ->
@@ -249,6 +249,17 @@ class MailCatcher
             else
               1
           )
+
+        presentations: () ->
+          result = []
+          addPresentation = (name, type, text) -> result.push({ name: name, type: type, text: text })
+
+          for k,p of this.selectedMessage.parts
+            addPresentation(this.contentTypeName(p.type), p.type, p.body)
+
+          addPresentation('Source', 'source', this.selectedMessage.source)
+
+          result
     )
 
     key "up", =>
