@@ -164,11 +164,14 @@ class MailCatcher
         downloadUrl: (message) ->
           "/api/messages/#{message.id}.eml"
 
-        contentTypeName: (type) ->
-          switch type
-            when 'text/plain' then 'Plain Text'
-            when 'text/html' then 'HTML'
-            else 'Other'
+        presentationDisplayName: (presentation) ->
+          if presentation.type == 'source'
+            'Source'
+          else
+            switch presentation.contentType
+              when 'text/plain' then 'Plain Text'
+              when 'text/html' then 'HTML'
+              else 'Other'
 
         isMessageSelected: (message) ->
           this.selectedMessage and this.selectedMessage.id == message.id
@@ -204,12 +207,21 @@ class MailCatcher
           this.selectedPresentation = presentation
 
         isPresentationSelected: (presentation) ->
-          this.selectedPresentation and this.selectedPresentation.type == presentation.type
+          unless this.selectedPresentation
+            false
+          else if this.selectedPresentation.type == presentation.type
+            if this.selectedPresentation.id == null or this.selectedPresentation.id == presentation.id
+              true
+            else
+              false
 
-        displaySelectedPresentation: () ->
-          if this.selectedPresentation
-            body = $('#message iframe.body').contents().find("body")
-            body.html(this.selectedPresentation.text)
+        selectedPresentationUrl: () ->
+          unless this.selectedPresentation
+            null
+          else if this.selectedPresentation.type == 'source'
+            "/api/messages/#{this.selectedMessage.id}/source"
+          else
+            "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}"
 
       computed:
         folders: () ->
@@ -251,13 +263,16 @@ class MailCatcher
           )
 
         presentations: () ->
+          unless this.selectedMessage
+            return null
+
           result = []
-          addPresentation = (name, type, text) -> result.push({ name: name, type: type, text: text })
+          addPresentation = (type, id = null, contentType = null) -> result.push({ type: type, id: id, contentType: contentType })
 
           for k,p of this.selectedMessage.parts
-            addPresentation(this.contentTypeName(p.type), p.type, p.body)
+            addPresentation('part', p.id, p.type)
 
-          addPresentation('Source', 'source', this.selectedMessage.source)
+          addPresentation('source')
 
           result
     )

@@ -77,7 +77,14 @@ module MailCatcher
 
     get '/api/messages' do
       content_type :json
-      messages = Mail.messages.map { |v| v.to_h }
+      messages = Mail.messages.map do |message|
+        hash = message.to_h
+        hash[:source] = nil
+        hash[:parts].each { |_,v| v[:body] = nil }
+        hash[:attachments].each { |_,v| v[:body] = nil }
+        hash
+      end
+
       JSON.generate(messages)
     end
 
@@ -125,9 +132,6 @@ module MailCatcher
       if message
         content_type :json
         hash = message.to_h
-        hash[:formats] = ['source']
-        hash[:formats] << 'html' if message.has_html?
-        hash[:formats] << 'plain' if message.has_plain?
         hash[:attachments].map! do |attachment|
           attachment.merge({ 'href' => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
         end
@@ -191,6 +195,28 @@ module MailCatcher
         content_type part[:type], :charset => (part[:charset] || 'utf8')
         attachment part[:filename] if part[:is_attachment] == 1
         body part[:body].to_s
+      else
+        not_found
+      end
+    end
+
+    get '/api/messages/:id/source' do
+      message = Mail.message(params[:id])
+
+      if message
+        content_type('text/plain')
+        message.source
+      else
+        not_found
+      end
+    end
+
+    get '/api/messages/:id/part/:part_id' do
+      message = Mail.message(params[:id])
+
+      if message && (part = message.parts[params[:part_id].to_sym])
+        content_type(part[:type], :charset => (part[:charset] || 'utf8'))
+        body(part[:body])
       else
         not_found
       end
