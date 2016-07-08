@@ -76,7 +76,7 @@
           <li class="format tab" v-for="presentation in presentations" v-bind:class="{ 'selected': isPresentationSelected(presentation) }" v-on:click="selectPresentation(presentation)">
             <a href="#">{{ presentationDisplayName(presentation) }}</a>
           </li>
-          <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button"><span>Download</span></a></li>
+          <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank"><span>Download</span></a></li>
           <li class="action delete"><a href="#" class="button" v-on:click="deleteMessage(selectedMessage)"><span>Delete</span></a></li>
         </ul>
       </nav>

@@ -162,7 +162,7 @@ class MailCatcher
           false
 
         downloadUrl: (message) ->
-          "/api/messages/#{message.id}.eml"
+          "/api/messages/#{message.id}/source?download"
 
         presentationDisplayName: (presentation) ->
           if presentation.type == 'source'

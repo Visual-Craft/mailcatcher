@@ -130,23 +130,18 @@ module MailCatcher
       end
     end
 
-    get '/api/messages/:id.eml' do
-      message = Mail.message(params[:id])
-
-      if message
-        content_type 'message/rfc822'
-        message.source
-      else
-        not_found
-      end
-    end
-
     get '/api/messages/:id/source' do
       message = Mail.message(params[:id])
 
       if message
-        content_type('text/plain')
-        message.source
+        if params.has_key?('download')
+          content_type('message/rfc822')
+          attachment('message.eml')
+          message.source
+        else
+          content_type('text/plain')
+          message.source
+        end
       else
         not_found
       end
