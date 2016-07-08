@@ -2,6 +2,8 @@
 #= require date
 #= require keymaster
 #= require underscore
+#= require moment
+#= require vue
 
 class Resizer
   constructor: () ->
