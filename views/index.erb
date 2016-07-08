@@ -22,7 +22,7 @@
         <div class="folders-wrapper">
           <ul>
             <li v-for="folder in folders" class="noselect" v-bind:class="{ 'selected': selectedOwner === folder.owner }">
-              <span v-on:click="selectOwner(folder.owner)">{{ folder.name }} ({{ folder.count }})</span>
+              <span class="folder-name" v-on:click="selectOwner(folder.owner)">{{ folder.name }} ({{ folder.count }})</span>
               <span class="clear-folder" v-if="folder.count > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
             </li>
           </ul>
