@@ -58,5 +58,13 @@ module MailCatcher
         from_h(processed_data)
       end
     end
+
+    def to_short_hash
+      hash = to_h
+      hash[:source] = nil
+      hash[:parts].each { |_,v| v[:body] = nil }
+      hash[:attachments].each { |_,v| v[:body] = nil }
+      hash
+    end
   end
 end

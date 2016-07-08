@@ -77,14 +77,7 @@ module MailCatcher
 
     get '/api/messages' do
       content_type :json
-      messages = Mail.messages.map do |message|
-        hash = message.to_h
-        hash[:source] = nil
-        hash[:parts].each { |_,v| v[:body] = nil }
-        hash[:attachments].each { |_,v| v[:body] = nil }
-        hash
-      end
-
+      messages = Mail.messages.map { |message| message.to_short_hash }
       JSON.generate(messages)
     end
 
@@ -93,7 +86,7 @@ module MailCatcher
         request.websocket!(
           :on_start => proc do |websocket|
             subscription = Events::MessageAdded.subscribe do |message|
-              websocket.send_message(JSON.generate(message.to_h))
+              websocket.send_message(JSON.generate(message.to_short_hash))
             end
 
             # send ping responses to correctly work with forward proxies
@@ -131,7 +124,7 @@ module MailCatcher
 
       if message
         content_type :json
-        JSON.generate(message.to_h)
+        JSON.generate(message.to_short_hash)
       else
         not_found
       end
