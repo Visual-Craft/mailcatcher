@@ -126,53 +126,12 @@ module MailCatcher
       status 204
     end
 
-    get '/api/messages/:id.json' do
+    get '/api/messages/:id' do
       message = Mail.message(params[:id])
 
       if message
         content_type :json
-        hash = message.to_h
-        hash[:attachments].map! do |attachment|
-          attachment.merge({ 'href' => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
-        end
-        JSON.generate(hash)
-      else
-        not_found
-      end
-    end
-
-    get '/api/messages/:id.html' do
-      message = Mail.message(params[:id])
-      if message && message.has_html?
-        content_type :html, :charset => (message.html_part[:charset] || 'utf8')
-
-        body = message.html_part[:body]
-
-        # Rewrite body to link to embedded attachments served by cid
-        body.gsub! /cid:([^'"> ]+)/, "#{message.id}/parts/\\1"
-
-        body
-      else
-        not_found
-      end
-    end
-
-    get '/api/messages/:id.plain' do
-      message = Mail.message(params[:id])
-      if message && message.has_plain?
-        content_type message.plain_part[:type], :charset => (message.plain_part[:charset] || 'utf8')
-        message.plain_part[:body]
-      else
-        not_found
-      end
-    end
-
-    get '/api/messages/:id.source' do
-      message = Mail.message(params[:id])
-
-      if message
-        content_type 'text/plain'
-        message.source
+        JSON.generate(message.to_h)
       else
         not_found
       end
@@ -189,17 +148,6 @@ module MailCatcher
       end
     end
 
-    get '/api/messages/:id/parts/:cid' do
-      message = Mail.message(params[:id])
-      if message && (part = message.cid_part(params[:cid]))
-        content_type part[:type], :charset => (part[:charset] || 'utf8')
-        attachment part[:filename] if part[:is_attachment] == 1
-        body part[:body].to_s
-      else
-        not_found
-      end
-    end
-
     get '/api/messages/:id/source' do
       message = Mail.message(params[:id])
 
@@ -211,11 +159,23 @@ module MailCatcher
       end
     end
 
-    get '/api/messages/:id/part/:part_id' do
+    get '/api/messages/:id/part/:part_id/body' do
       message = Mail.message(params[:id])
 
       if message && (part = message.parts[params[:part_id].to_sym])
         content_type(part[:type], :charset => (part[:charset] || 'utf8'))
+        body(part[:body])
+      else
+        not_found
+      end
+    end
+
+    get '/api/messages/:id/attachment/:attachment_id/body' do
+      message = Mail.message(params[:id])
+
+      if message && (part = message.attachments[params[:attachment_id].to_sym])
+        content_type(part[:type], :charset => (part[:charset] || 'utf8'))
+        attachment(part[:filename])
         body(part[:body])
       else
         not_found
