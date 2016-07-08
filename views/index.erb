@@ -15,6 +15,7 @@
       </ul>
     </nav>
   </header>
+
   <table class="wrapper">
     <tr>
       <td class="folders">
@@ -63,15 +64,19 @@
         <dd class="to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</dd>
         <dt class="subject">Subject</dt>
         <dd class="subject">{{ selectedMessage.subject || "No subject" }}</dd>
-        <dt class="attachments">Attachments</dt>
-        <dd class="attachments"></dd>
+        <dt class="attachments" v-if="hasAttachments(selectedMessage)">Attachments</dt>
+        <dd class="attachments" v-if="hasAttachments(selectedMessage)">
+          <ul>
+            <li v-for="(id, attachment) in selectedMessage.attachments"><a href="/api/messages/{{ selectedMessage.id }}/attachment/{{ id }}/body">{{ attachment.filename }}</a></li>
+          </ul>
+        </dd>
       </dl>
       <nav class="views">
         <ul>
           <li class="format tab" v-for="presentation in presentations" v-bind:class="{ 'selected': isPresentationSelected(presentation) }" v-on:click="selectPresentation(presentation)">
             <a href="#">{{ presentationDisplayName(presentation) }}</a>
           </li>
-          <li class="action download" data-message-format="html"><a href="{{ downloadUrl(selectedMessage) }}" class="button"><span>Download</span></a></li>
+          <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button"><span>Download</span></a></li>
           <li class="action delete"><a href="#" class="button" v-on:click="deleteMessage(selectedMessage)"><span>Delete</span></a></li>
         </ul>
       </nav>

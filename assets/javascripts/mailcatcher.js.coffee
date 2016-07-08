@@ -221,7 +221,10 @@ class MailCatcher
           else if this.selectedPresentation.type == 'source'
             "/api/messages/#{this.selectedMessage.id}/source"
           else
-            "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}"
+            "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body"
+
+        hasAttachments: (message) ->
+          not _.isEmpty(message.attachments)
 
       computed:
         folders: () ->
@@ -313,7 +316,7 @@ class MailCatcher
         message = $.parseJSON(event.data)
 
         # handle ping, which just returns empty object
-        if not $.isEmptyObject(message)
+        if not _.isEmpty(message)
           @vm.$get('messages').push(message)
 
       $(window).bind('beforeunload', () =>
