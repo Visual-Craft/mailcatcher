@@ -58,25 +58,5 @@ module MailCatcher
         from_h(processed_data)
       end
     end
-
-    def html_part
-      parts.detect { |p| %w(text/html application/xhtml+xml).include?(p[:type]) }
-    end
-
-    def has_html?
-      !!html_part
-    end
-
-    def plain_part
-      parts.detect { |p| 'text/plain' == p[:type] }
-    end
-
-    def has_plain?
-      !!plain_part
-    end
-
-    def cid_part(cid)
-      parts.detect { |p| p[:cid] === cid } || attachments.detect { |p| p[:cid] === cid }
-    end
   end
 end
