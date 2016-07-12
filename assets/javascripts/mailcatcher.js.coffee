@@ -1,5 +1,4 @@
 #= require jquery
-#= require date
 #= require keymaster
 #= require underscore
 #= require moment
