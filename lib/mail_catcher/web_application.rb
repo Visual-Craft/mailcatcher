@@ -77,7 +77,7 @@ module MailCatcher
 
     get '/api/messages' do
       content_type :json
-      messages = Mail.messages.map { |v| v.to_h }
+      messages = Mail.messages.map { |message| message.to_short_hash }
       JSON.generate(messages)
     end
 
@@ -86,7 +86,7 @@ module MailCatcher
         request.websocket!(
           :on_start => proc do |websocket|
             subscription = Events::MessageAdded.subscribe do |message|
-              websocket.send_message(JSON.generate(message.to_h))
+              websocket.send_message(JSON.generate(message.to_short_hash))
             end
 
             # send ping responses to correctly work with forward proxies
@@ -119,78 +119,52 @@ module MailCatcher
       status 204
     end
 
-    get '/api/messages/:id.json' do
+    get '/api/messages/:id' do
       message = Mail.message(params[:id])
 
       if message
         content_type :json
-        hash = message.to_h
-        hash[:formats] = ['source']
-        hash[:formats] << 'html' if message.has_html?
-        hash[:formats] << 'plain' if message.has_plain?
-        hash[:attachments].map! do |attachment|
-          attachment.merge({ 'href' => "/messages/#{escape(message.id)}/parts/#{escape(attachment[:cid])}" })
+        JSON.generate(message.to_short_hash)
+      else
+        not_found
+      end
+    end
+
+    get '/api/messages/:id/source' do
+      message = Mail.message(params[:id])
+
+      if message
+        if params.has_key?('download')
+          content_type('message/rfc822')
+          attachment('message.eml')
+          message.source
+        else
+          content_type('text/plain')
+          message.source
         end
-        JSON.generate(hash)
       else
         not_found
       end
     end
 
-    get '/api/messages/:id.html' do
+    get '/api/messages/:id/part/:part_id/body' do
       message = Mail.message(params[:id])
-      if message && message.has_html?
-        content_type :html, :charset => (message.html_part[:charset] || 'utf8')
 
-        body = message.html_part[:body]
-
-        # Rewrite body to link to embedded attachments served by cid
-        body.gsub! /cid:([^'"> ]+)/, "#{message.id}/parts/\\1"
-
-        body
+      if message && (part = message.parts[params[:part_id].to_sym])
+        content_type(part[:type], :charset => (part[:charset] || 'utf8'))
+        body(part[:body])
       else
         not_found
       end
     end
 
-    get '/api/messages/:id.plain' do
-      message = Mail.message(params[:id])
-      if message && message.has_plain?
-        content_type message.plain_part[:type], :charset => (message.plain_part[:charset] || 'utf8')
-        message.plain_part[:body]
-      else
-        not_found
-      end
-    end
-
-    get '/api/messages/:id.source' do
+    get '/api/messages/:id/attachment/:attachment_id/body' do
       message = Mail.message(params[:id])
 
-      if message
-        content_type 'text/plain'
-        message.source
-      else
-        not_found
-      end
-    end
-
-    get '/api/messages/:id.eml' do
-      message = Mail.message(params[:id])
-
-      if message
-        content_type 'message/rfc822'
-        message.source
-      else
-        not_found
-      end
-    end
-
-    get '/api/messages/:id/parts/:cid' do
-      message = Mail.message(params[:id])
-      if message && (part = message.cid_part(params[:cid]))
-        content_type part[:type], :charset => (part[:charset] || 'utf8')
-        attachment part[:filename] if part[:is_attachment] == 1
-        body part[:body].to_s
+      if message && (part = message.attachments[params[:attachment_id].to_sym])
+        content_type(part[:type], :charset => (part[:charset] || 'utf8'))
+        attachment(part[:filename])
+        body(part[:body])
       else
         not_found
       end
