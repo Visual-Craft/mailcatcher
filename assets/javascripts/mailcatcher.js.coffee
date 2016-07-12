@@ -5,7 +5,9 @@
 #= require vue
 
 class Resizer
-  constructor: () ->
+  constructor: (resizer, onResize) ->
+    @resizer = resizer
+    @onResize = onResize
     mouseEvents =
       mouseup: (e) =>
         e.preventDefault()
@@ -14,20 +16,17 @@ class Resizer
         e.preventDefault()
         @resizeTo(e.clientY)
 
-    $("#resizer").live
-      mousedown: (e) =>
-        e.preventDefault()
-        $(window).bind(mouseEvents)
+    @resizer.mousedown((e) =>
+      e.preventDefault()
+      $(window).bind(mouseEvents)
+    )
 
     @resizeToSaved()
-
 
   resizeToSavedKey: "mailcatcherSeparatorHeight"
 
   resizeTo: (height) ->
-    blockHeight = Math.max(height, 60) - $(".wrapper").offset().top
-    $(".folders-wrapper").css(height: blockHeight)
-    $("#messages").css(height: blockHeight + 14)
+    @onResize(height)
     window.localStorage?.setItem(@resizeToSavedKey, height)
 
   resizeToSaved: ->
@@ -45,11 +44,14 @@ Vue.filter('moment', (value, format) ->
 )
 
 jQuery(() ->
-  new Resizer
-  vm = new Vue(
+  new Vue(
     el: '#mc-app'
 
-    init: () ->
+    created: () ->
+      this.loadMessages()
+      this.subscribe()
+
+    ready: () ->
       key "up", =>
         this.selectMessageRelative(-1)
         false
@@ -69,6 +71,12 @@ jQuery(() ->
       key "delete", =>
         this.deleteSelectedMessage()
         false
+
+      this.resizer = new Resizer($("#resizer"), (height) =>
+        blockHeight = Math.max(height, 60) - $(".wrapper").offset().top
+        $(".folders-wrapper").css(height: blockHeight)
+        $("#messages").css(height: blockHeight + 14)
+      )
 
     data:
       messages : []
@@ -111,7 +119,7 @@ jQuery(() ->
     methods:
       subscribe: () ->
         if WebSocket?
-          return if this.websocket?
+          return if this.websocket
 
           secure = window.location.protocol is "https:"
           protocol = if secure then "wss" else "ws"
@@ -331,7 +339,4 @@ jQuery(() ->
 
         result
   )
-
-  vm.loadMessages()
-  vm.subscribe()
 )
