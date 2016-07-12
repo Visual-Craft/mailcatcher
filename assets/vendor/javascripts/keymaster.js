@@ -176,9 +176,9 @@
 
       if (keys.length > 1) {
         mods = getMods(keys);
-        key = keys[keys.length - 1];
       }
 
+      key = keys[keys.length - 1];
       key = code(key);
 
       if (scope === undefined) {
@@ -291,6 +291,6 @@
   global.key.noConflict = noConflict;
   global.key.unbind = unbindKey;
 
-  if(typeof module !== 'undefined') module.exports = key;
+  if(typeof module !== 'undefined') module.exports = assignKey;
 
 })(this);
