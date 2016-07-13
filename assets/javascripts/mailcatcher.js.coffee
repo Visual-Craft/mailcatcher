@@ -70,9 +70,26 @@ jQuery(() ->
       login:
         template: '#mc-login'
 
+        data: () ->
+          username: null
+          password: null
+
         methods:
-          login: () ->
-            this.$parent.toMain()
+          login: (username, password) ->
+            console.log username, password
+
+            $.ajax
+              url: "/api/login"
+              data:
+                login: username
+                pass: password
+              type: "POST"
+              success: (data) =>
+                console.log data
+                this.$parent.currentUser = data
+                this.$parent.toMain()
+              error: (jqXHR) ->
+                alert "[#{jqXHR.status}] #{jqXHR.statusText}"
 
       main:
         template: '#mc-main'

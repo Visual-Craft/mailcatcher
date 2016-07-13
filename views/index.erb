@@ -12,11 +12,11 @@
     <header>
       <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
       <nav class="app">
-        <form method='POST' action='#'>
+        <form>
           <ul>
-            <li class="login"><input type="login" name="login" placeholder="login" /></li>
-            <li class="password"><input type="password" name="pass" placeholder="password" /></li>
-            <li class="password"><input v-on:click="login" type="submit" name="submit" value="Login" /></li>
+            <li class="login"><input v-model="username" placeholder="login" /></li>
+            <li class="password"><input v-model="password" placeholder="password" /></li>
+            <li><input v-on:click="login(username, password)" type="submit" value="Login" /></li>
           </ul>
         </form>
       </nav>

@@ -66,6 +66,14 @@ module MailCatcher
             assets_env.call(sub_env)
           end
         end
+            post '/api/login' do
+              user = MailCatcher.users.find(params[:login])
+              if user && user.password == params[:pass]
+                user.name
+              else
+                error(401, 'Unauthorized')
+              end
+            end
       end
 
       @class_initialized = true
