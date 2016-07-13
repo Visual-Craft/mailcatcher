@@ -6,6 +6,7 @@ require 'skinny'
 require 'json'
 require 'mail_catcher/events'
 require 'mail_catcher/mail'
+require 'jwt'
 
 class Sinatra::Request
   include Skinny::Helpers
