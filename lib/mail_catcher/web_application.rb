@@ -23,6 +23,7 @@ module MailCatcher
       self.class.class_eval do
         set :environment, MailCatcher.env
         set :root, MailCatcher.root_dir
+        set :with_auth, false
 
         configure do
           helpers do
@@ -67,14 +68,56 @@ module MailCatcher
             assets_env.call(sub_env)
           end
         end
+
+        if !MailCatcher.users.no_auth?
+          configure do
+            helpers do
+              def authorized?
+                !!current_user
+              end
+
+              def authorize!
+                error(403, 'Forbidden') unless authorized?
+              end
+
+              def current_user
+                p MailCatcher.users.find(token['data']) if token
+              end
+
+              def generate_token(data)
+                JWT.encode({ data: data }, 'XAiOjJKv1QiLCJhb', 'HS256')
+              end
+
+              def token
+                @token ||= begin
+                  p JWT.decode(headers['HTTP_AUTH'] || params['HTTP_AUTH'], 'XAiOjJKv1QiLCJhb', 'HS256').first
+                rescue
+                  nil
+                end
+              end
+            end
+
+            before do
+              if MailCatcher.users.no_auth? || request.path_info == '/api/login' || !/\A\/api\//.match(request.path_info)
+                return
+              end
+
+              authorize!
+              settings.with_auth = true
+            end
+
             post '/api/login' do
               user = MailCatcher.users.find(params[:login])
+
               if user && user.password == params[:pass]
-                user.name
+                content_type 'text/plain'
+                generate_token(user.name)
               else
                 error(401, 'Unauthorized')
               end
             end
+          end
+        end
       end
 
       @class_initialized = true

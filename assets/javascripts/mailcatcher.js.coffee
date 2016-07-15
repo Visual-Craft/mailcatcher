@@ -57,6 +57,7 @@ jQuery(() ->
     data:
       currentComponent: 'login'
       currentUser: null
+      token: null
       withAuth: true
 
     methods:
@@ -75,21 +76,18 @@ jQuery(() ->
           password: null
 
         methods:
-          login: (username, password) ->
-            console.log username, password
-
+          loginSubmit: () ->
             $.ajax
               url: "/api/login"
               data:
-                login: username
-                pass: password
+                login: this.username
+                pass: this.password
               type: "POST"
-              success: (data) =>
-                console.log data
-                this.$parent.currentUser = data
+              success: (token) =>
+                this.$parent.token = token
                 this.$parent.toMain()
-              error: (jqXHR) ->
-                alert "[#{jqXHR.status}] #{jqXHR.statusText}"
+              error: (data) ->
+#                console.log("[#{data.status}] #{data.statusText}")
 
       main:
         template: '#mc-main'
@@ -151,15 +149,27 @@ jQuery(() ->
               this.scrollToRow(message)
 
               if message.new
-                $.post("/api/messages/#{message.id}/mark-readed", {}, () ->
-                  message.new = 0
-                )
+                this.wrapAjax
+                  url: "/api/messages/#{message.id}/mark-readed"
+                  type: "POST"
+                  success: (data) =>
+                    message.new = 0
 
               this.selectedPresentation = this.presentations[0]
             else
               this.selectedPresentation = null
 
         methods:
+          wrapAjax: (options) ->
+            if this.$parent.token
+              options['data'] = _.extend(options['data'] || {}, { HTTP_AUTH: this.$parent.token })
+
+            $.ajax(options)
+              .fail((data) ->
+                if data && (data.status == 403 || data.status == 401)
+                  this.$parent.toLogin()
+              )
+
           subscribe: () ->
             if WebSocket?
               return if this.websocket?
@@ -187,9 +197,12 @@ jQuery(() ->
               , 2000)
 
           loadMessages: () ->
-            $.getJSON("/api/messages", (messages) =>
-              this.messages = messages
-            )
+            this.wrapAjax
+              url: "/api/messages"
+              type: "GET"
+              dataType: 'json'
+              success: (messages) =>
+                this.messages = messages
 
           selectMessage: (message) ->
             this.selectedMessage = message
@@ -230,7 +243,7 @@ jQuery(() ->
               else
                 params = '?' + $.param({"owner": owner})
 
-              $.ajax
+              this.wrapAjax
                 url: "/api/messages#{params}"
                 type: "DELETE"
                 success: =>
@@ -265,7 +278,7 @@ jQuery(() ->
             false
 
           downloadUrl: (message) ->
-            "/api/messages/#{message.id}/source?download"
+            "/api/messages/#{message.id}/source?download#{"=1&HTTP_AUTH=#{this.$parent.token}" if this.$parent.token}"
 
           presentationDisplayName: (presentation) ->
             if presentation.type == 'source'
@@ -283,12 +296,11 @@ jQuery(() ->
             if not confirm("Are you sure?")
               return
 
-            $.ajax
+            this.wrapAjax
               url: "/api/messages/#{message.id}"
               type: "DELETE"
               success: =>
                 this.messages = _.reject(this.messages, (v) -> v.id == message.id)
-
               error: ->
                 alert "Error while removing message."
 
@@ -322,9 +334,9 @@ jQuery(() ->
             unless this.selectedPresentation
               null
             else if this.selectedPresentation.type == 'source'
-              "/api/messages/#{this.selectedMessage.id}/source"
+              "/api/messages/#{this.selectedMessage.id}/source#{"?HTTP_AUTH=#{this.$parent.token}" if this.$parent.token}"
             else
-              "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body"
+              "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body#{"?HTTP_AUTH=#{this.$parent.token}" if this.$parent.token}"
 
           hasAttachments: (message) ->
             not _.isEmpty(message.attachments)

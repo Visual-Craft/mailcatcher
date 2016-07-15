@@ -12,11 +12,11 @@
     <header>
       <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
       <nav class="app">
-        <form>
+        <form v-on:submit.prevent="loginSubmit">
           <ul>
             <li class="login"><input v-model="username" placeholder="login" /></li>
             <li class="password"><input v-model="password" placeholder="password" /></li>
-            <li><input v-on:click="login(username, password)" type="submit" value="Login" /></li>
+            <li><input type="submit" value="Login" /></li>
           </ul>
         </form>
       </nav>
