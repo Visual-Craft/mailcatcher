@@ -49,14 +49,13 @@ jQuery(() ->
     el: '#mc-app'
 
     created: () ->
-      if not this.withAuth || this.currentUser
+      if not this.withAuth || this.token
         this.toMain()
       else
         this.toLogin()
 
     data:
       currentComponent: 'login'
-      currentUser: null
       token: null
       withAuth: true
 
