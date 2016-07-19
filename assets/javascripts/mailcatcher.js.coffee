@@ -290,18 +290,29 @@ jQuery(() ->
       folders: () ->
         result = []
         owners = {}
+        totalNew = 0
         addFolder = (name, owner, count) -> result.push({ name: name, owner: owner, count: count })
-
-        addFolder('! All', null, this.messages.length)
-
-        unless this.messages.length
-          return result
 
         for k,v of this.messages
           if owners[v.owner]
-            owners[v.owner]++
+            owners[v.owner]['total']++
           else
-            owners[v.owner] = 1
+            owners[v.owner] = {
+              'total': 1
+              'new': 0
+            };
+
+          if v.new
+            totalNew++
+            owners[v.owner]['new']++
+
+        addFolder('! All', null, {
+          'total': this.messages.length
+          'new': totalNew
+        })
+
+        unless this.messages.length
+          return result
 
         for k,v of owners
           addFolder(k || '! No owner', k, v)
