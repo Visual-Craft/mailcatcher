@@ -16,7 +16,7 @@ class Resizer
         e.preventDefault()
         @resizeTo(e.clientY)
 
-    $("#resizer").live
+    $("#resizer").on
       mousedown: (e) =>
         e.preventDefault()
         $(window).bind(mouseEvents)
