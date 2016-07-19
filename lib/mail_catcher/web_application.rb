@@ -94,12 +94,12 @@ module MailCatcher
               end
 
               def generate_token(data)
-                JWT.encode({ data: data }, 'XAiOjJKv1QiLCJhb', 'HS256')
+                JWT.encode({ data: data }, MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm])
               end
 
               def token
                 @token ||= begin
-                  JWT.decode(cookies['AUTH'] || params['AUTH'], 'XAiOjJKv1QiLCJhb', 'HS256').first
+                  JWT.decode(cookies['AUTH'] || params['AUTH'], MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm]).first
                 rescue
                   nil
                 end

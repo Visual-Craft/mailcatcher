@@ -10,6 +10,8 @@ http:
   port: 1080
 password: ~
 verbose: false
+token_secret: 'XAiOjJKv1QiLCJhb'
+token_algorithm: 'HS256'
 users:
   -
     name: 'test'
