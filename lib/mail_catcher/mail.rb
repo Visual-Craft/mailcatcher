@@ -13,8 +13,10 @@ module MailCatcher::Mail extend self
     end
   end
 
-  def messages
-    collection.find.sort(:created_at => -1).map { |doc| MailCatcher::Message.from_mongo(doc) }
+  def messages(owners=nil)
+    collection.find.sort(:created_at => -1)
+      .map { |doc| MailCatcher::Message.from_mongo(doc) }
+      .select { |m| !owners || !m.to_h[:owner] || owners.include?(m.to_h[:owner]) }
   end
 
   def message(id)
