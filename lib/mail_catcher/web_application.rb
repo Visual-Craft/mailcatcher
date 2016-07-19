@@ -7,6 +7,7 @@ require 'json'
 require 'mail_catcher/events'
 require 'mail_catcher/mail'
 require 'jwt'
+require "sinatra/cookies"
 
 class Sinatra::Request
   include Skinny::Helpers
@@ -24,6 +25,8 @@ module MailCatcher
         set :environment, MailCatcher.env
         set :root, MailCatcher.root_dir
         set :with_auth, false
+
+        helpers Sinatra::Cookies
 
         configure do
           helpers do
