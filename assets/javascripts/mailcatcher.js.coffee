@@ -50,9 +50,9 @@ jQuery(() ->
     el: '#mc-app'
 
     created: () ->
-      this.checkAuth()
+      promise = this.checkAuth()
 
-      if not this.withAuth || this.authToken()
+      if promise.done((data) -> this.withAuth = !!data) && not this.withAuth || this.authToken()
         this.toMain()
       else
         this.toLogin()
@@ -75,8 +75,6 @@ jQuery(() ->
         $.ajax
           url: "/api/with_auth"
           type: "GET"
-          success: (data) =>
-            this.withAuth = !!data
 
     components:
       login:
