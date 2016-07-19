@@ -38,7 +38,6 @@ class Resizer
     unless isNaN(height)
       @resizeTo(height)
 
-
 Vue.filter('moment', (value, format) ->
   if value
     moment(value).format(format)
@@ -47,19 +46,20 @@ Vue.filter('moment', (value, format) ->
 )
 
 jQuery(() ->
-  vm = new Vue(
+  new Vue(
     el: '#mc-app'
 
     created: () ->
-      if not this.withAuth || this.token
+      this.checkAuth()
+
+      if not this.withAuth || this.authToken()
         this.toMain()
       else
         this.toLogin()
 
     data:
       currentComponent: 'login'
-      token: null
-      withAuth: true
+      withAuth: false
 
     methods:
       toLogin: () ->
@@ -68,9 +68,26 @@ jQuery(() ->
       toMain: () ->
         this.currentComponent = 'main'
 
+      authToken: () ->
+        Cookies.get('AUTH')
+
+      checkAuth: () ->
+        $.ajax
+          url: "/api/with_auth"
+          type: "GET"
+          success: (data) =>
+            this.withAuth = !!data
+
     components:
       login:
         template: '#mc-login'
+
+        created: () ->
+          noty({
+            text: "Please login",
+            type: 'error',
+            layout: 'bottomRight'
+          })
 
         data: () ->
           username: null
@@ -85,10 +102,13 @@ jQuery(() ->
                 pass: this.password
               type: "POST"
               success: (token) =>
-                this.$parent.token = token
+                Cookies.set('AUTH', token)
                 this.$parent.toMain()
               error: (data) ->
-#                console.log("[#{data.status}] #{data.statusText}")
+                noty({
+                  text: "Invalid login or password",
+                  type: 'error',
+                })
 
       main:
         template: '#mc-main'
@@ -162,14 +182,18 @@ jQuery(() ->
 
         methods:
           wrapAjax: (options) ->
-            if this.$parent.token
-              options['data'] = _.extend(options['data'] || {}, { HTTP_AUTH: this.$parent.token })
+#            if this.$parent.authToken()
+#              options['data'] = _.extend(options['data'] || {}, { HTTP_AUTH: this.$parent.authToken() })
 
             $.ajax(options)
-              .fail((data) ->
+              .fail((data) =>
                 if data && (data.status == 403 || data.status == 401)
                   this.$parent.toLogin()
               )
+
+          wrapUrl: (url) ->
+            url
+#            "#{url}#{"?HTTP_AUTH=#{this.$parent.authToken()}" if this.$parent.authToken()}"
 
           subscribe: () ->
             if WebSocket?
@@ -279,7 +303,7 @@ jQuery(() ->
             false
 
           downloadUrl: (message) ->
-            "/api/messages/#{message.id}/source?download#{"=1&HTTP_AUTH=#{this.$parent.token}" if this.$parent.token}"
+            this.wrapUrl("/api/messages/#{message.id}/source?download")
 
           presentationDisplayName: (presentation) ->
             if presentation.type == 'source'
@@ -335,12 +359,15 @@ jQuery(() ->
             unless this.selectedPresentation
               null
             else if this.selectedPresentation.type == 'source'
-              "/api/messages/#{this.selectedMessage.id}/source#{"?HTTP_AUTH=#{this.$parent.token}" if this.$parent.token}"
+              this.wrapUrl("/api/messages/#{this.selectedMessage.id}/source")
             else
-              "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body#{"?HTTP_AUTH=#{this.$parent.token}" if this.$parent.token}"
+              this.wrapUrl("/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body")
 
           hasAttachments: (message) ->
             not _.isEmpty(message.attachments)
+
+          attachmentUrl: (message, attachment) ->
+            this.wrapUrl("/api/messages/#{message.id}/attachment/#{attachment.id}/body")
 
         computed:
           folders: () ->

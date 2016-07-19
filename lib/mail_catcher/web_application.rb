@@ -37,6 +37,10 @@ module MailCatcher
             def stylesheet_tag(name)
               %{<link rel="stylesheet" href="/assets/#{name}.css">}
             end
+
+            def current_user
+              nil
+            end
           end
         end
 
@@ -51,6 +55,7 @@ module MailCatcher
               sprockets.append_path(path)
             end
           end
+
           assets_prefix = 'assets_dev'
 
           Sprockets::Helpers.configure do |config|
@@ -73,6 +78,7 @@ module MailCatcher
         end
 
         if !MailCatcher.users.no_auth?
+          settings.with_auth = true
           configure do
             helpers do
               def authorized?
@@ -84,7 +90,7 @@ module MailCatcher
               end
 
               def current_user
-                p MailCatcher.users.find(token['data']) if token
+                MailCatcher.users.find(token['data']) if token
               end
 
               def generate_token(data)
@@ -93,7 +99,7 @@ module MailCatcher
 
               def token
                 @token ||= begin
-                  p JWT.decode(headers['HTTP_AUTH'] || params['HTTP_AUTH'], 'XAiOjJKv1QiLCJhb', 'HS256').first
+                  JWT.decode(cookies['AUTH'] || params['AUTH'], 'XAiOjJKv1QiLCJhb', 'HS256').first
                 rescue
                   nil
                 end
@@ -101,12 +107,11 @@ module MailCatcher
             end
 
             before do
-              if MailCatcher.users.no_auth? || request.path_info == '/api/login' || !/\A\/api\//.match(request.path_info)
+              if MailCatcher.users.no_auth? || request.path_info == '/api/with_auth' || request.path_info == '/api/login' || !/\A\/api\//.match(request.path_info)
                 return
               end
 
               authorize!
-              settings.with_auth = true
             end
 
             post '/api/login' do
@@ -130,9 +135,14 @@ module MailCatcher
       erb :index
     end
 
+    get '/api/with_auth' do
+      content_type('text/plain')
+      settings.with_auth ? 1 : 0
+    end
+
     get '/api/messages' do
-      content_type :json
-      messages = Mail.messages.map { |message| message.to_short_hash }
+      content_type(:json)
+      messages = Mail.messages(current_user.try(:owners)).map { |message| message.to_short_hash }
       JSON.generate(messages)
     end
 
@@ -141,7 +151,7 @@ module MailCatcher
         request.websocket!(
           :on_start => proc do |websocket|
             subscription = Events::MessageAdded.subscribe do |message|
-              websocket.send_message(JSON.generate(message.to_short_hash))
+              websocket.send_message(JSON.generate(message.to_short_hash)) if !settings.with_auth || current_user.try(:allowed_owner?, message.to_h[:owner])
             end
 
             # send ping responses to correctly work with forward proxies
@@ -178,7 +188,7 @@ module MailCatcher
       message = Mail.message(params[:id])
 
       if message
-        content_type :json
+        content_type(:json)
         JSON.generate(message.to_short_hash)
       else
         not_found

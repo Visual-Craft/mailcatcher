@@ -84,7 +84,7 @@
           <dt class="attachments" v-if="hasAttachments(selectedMessage)">Attachments</dt>
           <dd class="attachments" v-if="hasAttachments(selectedMessage)">
             <ul>
-              <li v-for="(id, attachment) in selectedMessage.attachments"><a href="/api/messages/{{ selectedMessage.id }}/attachment/{{ id }}/body">{{ attachment.filename }}</a></li>
+              <li v-for="(id, attachment) in selectedMessage.attachments"><a href="{{ attachmentUrl(selectedMessage, attachment) }}" target="_blank">{{ attachment.filename }}</a></li>
             </ul>
           </dd>
         </dl>
