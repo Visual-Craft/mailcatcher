@@ -3,6 +3,8 @@
 #= require underscore
 #= require moment
 #= require vue
+#= require jquery.noty.packaged
+#= require js.cookie
 
 class Resizer
   constructor: () ->
