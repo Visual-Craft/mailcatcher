@@ -39,8 +39,8 @@
           <div class="folders-wrapper">
             <ul>
               <li v-for="folder in folders" class="noselect" v-bind:class="{ 'selected': selectedOwner === folder.owner }">
-                <span class="folder-name" v-on:click="selectOwner(folder.owner)">{{ folder.name }} ({{ folder.count }})</span>
-                <span class="clear-folder" v-if="folder.count > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
+                <span class="folder-name" v-on:click="selectOwner(folder.owner)">{{ folder.name }} ({{ folder.count.total }} total, {{ folder.count.new }} new)</span>
+                <span class="clear-folder" v-if="folder.count.total > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
               </li>
             </ul>
           </div>
@@ -101,6 +101,7 @@
       <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()"></iframe>
     </article>
   </template>
+
   <%= javascript_tag "mailcatcher" %>
 </body>
 </html>

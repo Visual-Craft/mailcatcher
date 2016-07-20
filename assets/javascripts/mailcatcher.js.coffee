@@ -7,7 +7,9 @@
 #= require js.cookie
 
 class Resizer
-  constructor: () ->
+  constructor: (resizer, onResize) ->
+    @resizer = resizer
+    @onResize = onResize
     mouseEvents =
       mouseup: (e) =>
         e.preventDefault()
@@ -16,20 +18,17 @@ class Resizer
         e.preventDefault()
         @resizeTo(e.clientY)
 
-    $("#resizer").on
-      mousedown: (e) =>
-        e.preventDefault()
-        $(window).bind(mouseEvents)
+    @resizer.mousedown((e) =>
+      e.preventDefault()
+      $(window).bind(mouseEvents)
+    )
 
     @resizeToSaved()
-
 
   resizeToSavedKey: "mailcatcherSeparatorHeight"
 
   resizeTo: (height) ->
-    blockHeight = Math.max(height, 60) - $(".wrapper").offset().top
-    $(".folders-wrapper").css(height: blockHeight)
-    $("#messages").css(height: blockHeight + 14)
+    @onResize(height)
     window.localStorage?.setItem(@resizeToSavedKey, height)
 
   resizeToSaved: ->
@@ -50,16 +49,16 @@ jQuery(() ->
     el: '#mc-app'
 
     created: () ->
-      promise = this.checkAuth()
-
-      if promise.done((data) -> this.withAuth = !!data) && not this.withAuth || this.authToken()
-        this.toMain()
-      else
-        this.toLogin()
+      this.checkAuth()
+        .done((authEnabled) =>
+          if not authEnabled || this.authToken()
+            this.toMain()
+          else
+            this.toLogin()
+        )
 
     data:
       currentComponent: 'login'
-      withAuth: false
 
     methods:
       toLogin: () ->
@@ -116,8 +115,6 @@ jQuery(() ->
           this.subscribe()
 
         ready: () ->
-          new Resizer
-
           key "up", =>
             this.selectMessageRelative(-1)
             false
@@ -138,12 +135,19 @@ jQuery(() ->
             this.deleteSelectedMessage()
             false
 
+          this.resizer = new Resizer($("#resizer"), (height) =>
+            blockHeight = Math.max(height, 60) - $(".wrapper").offset().top
+            $(".folders-wrapper").css(height: blockHeight)
+            $("#messages").css(height: blockHeight + 14)
+          )
+
         data: () ->
           messages : []
           selectedOwner: null
           search: ''
           selectedMessage: null
           selectedPresentation: null
+          resizer: null
 
         watch:
           'messages': (messages, oldMessages) ->
@@ -195,7 +199,7 @@ jQuery(() ->
 
           subscribe: () ->
             if WebSocket?
-              return if this.websocket?
+              return if this.websocket
 
               secure = window.location.protocol is "https:"
               protocol = if secure then "wss" else "ws"
@@ -371,18 +375,28 @@ jQuery(() ->
           folders: () ->
             result = []
             owners = {}
+            totalNew = 0
             addFolder = (name, owner, count) -> result.push({ name: name, owner: owner, count: count })
-
-            addFolder('! All', null, this.messages.length)
-
-            unless this.messages.length
-              return result
 
             for k,v of this.messages
               if owners[v.owner]
-                owners[v.owner]++
+                owners[v.owner]['total']++
               else
-                owners[v.owner] = 1
+                owners[v.owner] = {
+                  'total': 1
+                  'new': 0
+                }
+              if v.new
+                totalNew++
+                owners[v.owner]['new']++
+
+            addFolder('! All', null, {
+              'total': this.messages.length
+              'new': totalNew
+            })
+
+            unless this.messages.length
+              return result
 
             for k,v of owners
               addFolder(k || '! No owner', k, v)
