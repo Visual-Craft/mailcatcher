@@ -137,7 +137,7 @@ module MailCatcher
 
     get '/api/with_auth' do
       content_type('text/plain')
-      settings.with_auth ? 1 : 0
+      settings.with_auth ? true : false
     end
 
     get '/api/messages' do

@@ -58,7 +58,7 @@ jQuery(() ->
         )
 
     data:
-      currentComponent: 'login'
+      currentComponent: null
 
     methods:
       toLogin: () ->
