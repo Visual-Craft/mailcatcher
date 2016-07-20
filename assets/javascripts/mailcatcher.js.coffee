@@ -184,9 +184,6 @@ jQuery(() ->
 
         methods:
           wrapAjax: (options) ->
-#            if this.$parent.authToken()
-#              options['data'] = _.extend(options['data'] || {}, { HTTP_AUTH: this.$parent.authToken() })
-
             $.ajax(options)
               .fail((data) =>
                 if data && (data.status == 403 || data.status == 401)
@@ -195,7 +192,6 @@ jQuery(() ->
 
           wrapUrl: (url) ->
             url
-#            "#{url}#{"?HTTP_AUTH=#{this.$parent.authToken()}" if this.$parent.authToken()}"
 
           subscribe: () ->
             if WebSocket?
