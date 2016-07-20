@@ -83,7 +83,8 @@ jQuery(() ->
           noty({
             text: "Please login",
             type: 'error',
-            layout: 'bottomRight'
+            layout: 'bottomRight',
+            timeout: 3000
           })
 
         data: () ->
@@ -188,6 +189,17 @@ jQuery(() ->
               .fail((data) =>
                 if data && (data.status == 403 || data.status == 401)
                   this.$parent.toLogin()
+
+                  if data.status == 403
+                    noty({
+                      text: "Invalid login or password",
+                      type: 'error',
+                    })
+                  else
+                    noty({
+                      text: "Access denied",
+                      type: 'error',
+                    })
               )
 
           wrapUrl: (url) ->
