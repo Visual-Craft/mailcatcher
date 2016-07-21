@@ -81,9 +81,9 @@ jQuery(() ->
 
         created: () ->
           noty({
-            text: "Please login",
-            type: 'error',
-            layout: 'bottomRight',
+            text: "Please login"
+            type: 'error'
+            layout: 'bottomRight'
             timeout: 3000
           })
 
@@ -102,10 +102,10 @@ jQuery(() ->
               success: (token) =>
                 Cookies.set('AUTH', token)
                 this.$parent.toMain()
-              error: (data) ->
+              error: () ->
                 noty({
-                  text: "Invalid login or password",
-                  type: 'error',
+                  text: "Invalid login or password"
+                  type: 'error'
                 })
 
       main:
@@ -192,13 +192,13 @@ jQuery(() ->
 
                   if data.status == 403
                     noty({
-                      text: "Invalid login or password",
-                      type: 'error',
+                      text: "Invalid login or password"
+                      type: 'error'
                     })
                   else
                     noty({
-                      text: "Access denied",
-                      type: 'error',
+                      text: "Access denied"
+                      type: 'error'
                     })
               )
 
