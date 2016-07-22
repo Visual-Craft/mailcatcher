@@ -44,17 +44,10 @@ module MailCatcher
         end
 
         configure :development do
-          require 'sprockets'
-          require 'sprockets-sass'
-          require 'compass'
+          require 'mail_catcher/web_assets'
           require 'sprockets-helpers'
 
-          assets_env = Sprockets::Environment.new(File.expand_path('assets', MailCatcher.root_dir)).tap do |sprockets|
-            Dir["#{sprockets.root}/**/*/"].each do |path|
-              sprockets.append_path(path)
-            end
-          end
-
+          assets_env = MailCatcher::WebAssets
           assets_prefix = 'assets_dev'
 
           Sprockets::Helpers.configure do |config|
