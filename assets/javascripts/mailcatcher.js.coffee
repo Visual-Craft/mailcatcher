@@ -50,15 +50,23 @@ jQuery(() ->
 
     created: () ->
       this.checkAuth()
-        .done((authEnabled) =>
-          if not authEnabled || this.authToken()
+        .done((data) =>
+          if data && data.status
+            this.noAuth = data.no_auth
             this.toMain()
           else
             this.toLogin()
+            noty({
+              text: "Please login"
+              type: 'information'
+              layout: 'bottomRight'
+              timeout: 3000
+            })
         )
 
     data:
       currentComponent: null
+      noAuth: false
 
     methods:
       toLogin: () ->
@@ -72,20 +80,13 @@ jQuery(() ->
 
       checkAuth: () ->
         $.ajax
-          url: "/api/with_auth"
+          url: "/api/check-auth"
+          dataType: 'json'
           type: "GET"
 
     components:
       login:
         template: '#mc-login'
-
-        created: () ->
-          noty({
-            text: "Please login"
-            type: 'error'
-            layout: 'bottomRight'
-            timeout: 3000
-          })
 
         data: () ->
           username: null
@@ -190,7 +191,7 @@ jQuery(() ->
                 if data && (data.status == 403 || data.status == 401)
                   this.$parent.toLogin()
 
-                  if data.status == 403
+                  if data.status == 401
                     noty({
                       text: "Invalid login or password"
                       type: 'error'
@@ -378,6 +379,13 @@ jQuery(() ->
 
           attachmentUrl: (message, attachment) ->
             this.wrapUrl("/api/messages/#{message.id}/attachment/#{attachment.id}/body")
+
+          logout: () ->
+            Cookies.set('AUTH', null)
+            this.$parent.toLogin()
+
+          showLogoutButton: () ->
+            !this.$parent.noAuth
 
         computed:
           folders: () ->

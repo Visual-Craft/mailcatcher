@@ -29,6 +29,7 @@
       <nav class="app">
         <ul>
           <li class="search"><input type="search" placeholder="Search messages..." incremental="true" v-model="search" /></li>
+          <li class="logout"><div class="button"  v-if="showLogoutButton()" v-on:click="logout()">Logout</div></li>
         </ul>
       </nav>
     </header>

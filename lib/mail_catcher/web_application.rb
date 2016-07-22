@@ -24,7 +24,6 @@ module MailCatcher
       self.class.class_eval do
         set :environment, MailCatcher.env
         set :root, MailCatcher.root_dir
-        set :with_auth, false
 
         helpers Sinatra::Cookies
 
@@ -77,8 +76,15 @@ module MailCatcher
           end
         end
 
-        if !MailCatcher.users.no_auth?
-          settings.with_auth = true
+        if MailCatcher.users.no_auth?
+          configure do
+            helpers do
+              def current_user
+                nil
+              end
+            end
+          end
+        else
           configure do
             helpers do
               def authorized?
@@ -98,16 +104,14 @@ module MailCatcher
               end
 
               def token
-                @token ||= begin
-                  JWT.decode(cookies['AUTH'] || params['AUTH'], MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm]).first
-                rescue
-                  nil
-                end
+                JWT.decode(cookies['AUTH'] || params['AUTH'], MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm]).first
+              rescue
+                nil
               end
             end
 
             before do
-              if MailCatcher.users.no_auth? || request.path_info == '/api/with_auth' || request.path_info == '/api/login' || !/\A\/api\//.match(request.path_info)
+              if MailCatcher.users.no_auth? || request.path_info == '/api/check-auth' || request.path_info == '/api/login' || !/\A\/api\//.match(request.path_info)
                 return
               end
 
@@ -135,9 +139,12 @@ module MailCatcher
       erb :index
     end
 
-    get '/api/with_auth' do
-      content_type('text/plain')
-      settings.with_auth ? true : false
+    get '/api/check-auth' do
+      content_type(:json)
+      JSON.generate({
+        :status => MailCatcher.users.no_auth? || authorized?,
+        :no_auth => MailCatcher.users.no_auth?,
+      })
     end
 
     get '/api/messages' do
