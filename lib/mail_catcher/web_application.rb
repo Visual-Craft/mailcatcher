@@ -261,5 +261,13 @@ module MailCatcher
     not_found do
       'Not Found'
     end
+
+    error do |e|
+      if e.is_a? MailCatcher::Mail::NotFoundException
+        not_found
+      elsif e.is_a? MailCatcher::Mail::AccessDeniedException
+        error(403, 'Forbidden')
+      end
+    end
   end
 end

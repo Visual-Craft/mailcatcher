@@ -3,6 +3,9 @@ require 'mongo'
 require 'mail_catcher/message'
 
 module MailCatcher::Mail extend self
+  class NotFoundException < StandardError; end
+  class AccessDeniedException < StandardError; end
+
   def add_message(data)
     message = MailCatcher::Message.from_raw(data)
     result = collection.insert_one(message.to_mongo)
