@@ -149,7 +149,7 @@ module MailCatcher
 
     get '/api/messages' do
       content_type(:json)
-      messages = Mail.messages(current_user.try(:owners)).map { |message| message.to_short_hash }
+      messages = Mail.messages(current_user).map { |message| message.to_short_hash }
       JSON.generate(messages)
     end
 
@@ -158,7 +158,7 @@ module MailCatcher
         request.websocket!(
           :on_start => proc do |websocket|
             subscription = Events::MessageAdded.subscribe do |message|
-              websocket.send_message(JSON.generate(message.to_short_hash)) if !settings.with_auth || current_user.try(:allowed_owner?, message.to_h[:owner])
+              websocket.send_message(JSON.generate(message.to_short_hash)) if MailCatcher.users.no_auth? || current_user.try(:allowed_owner?, message.to_h[:owner])
             end
 
             # send ping responses to correctly work with forward proxies
@@ -183,44 +183,36 @@ module MailCatcher
       owner = params[:owner]
 
       if owner.nil?
-        Mail.delete!
+        Mail.delete!(current_user)
       else
-        Mail.delete_by_owner!(owner)
+        Mail.delete_by_owner!(owner, current_user)
       end
 
       status 204
     end
 
     get '/api/messages/:id' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
-      if message
-        content_type(:json)
-        JSON.generate(message.to_short_hash)
-      else
-        not_found
-      end
+      content_type(:json)
+      JSON.generate(message.to_short_hash)
     end
 
     get '/api/messages/:id/source' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
-      if message
-        if params.has_key?('download')
-          content_type('message/rfc822')
-          attachment('message.eml')
-          message.source
-        else
-          content_type('text/plain')
-          message.source
-        end
+      if params.has_key?('download')
+        content_type('message/rfc822')
+        attachment('message.eml')
+        message.source
       else
-        not_found
+        content_type('text/plain')
+        message.source
       end
     end
 
     get '/api/messages/:id/part/:part_id/body' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
       if message && (part = message.parts[params[:part_id].to_sym])
         content_type(part[:type], :charset => (part[:charset] || 'utf8'))
@@ -231,7 +223,7 @@ module MailCatcher
     end
 
     get '/api/messages/:id/attachment/:attachment_id/body' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
       if message && (part = message.attachments[params[:attachment_id].to_sym])
         content_type(part[:type], :charset => (part[:charset] || 'utf8'))
@@ -243,19 +235,11 @@ module MailCatcher
     end
 
     post '/api/messages/:id/mark-readed' do
-      if Mail.mark_readed(params[:id])
-        status 204
-      else
-        not_found
-      end
+      Mail.mark_readed(params[:id], current_user)
     end
 
     delete '/api/messages/:id' do
-      if Mail.delete_message!(params[:id])
-        status 204
-      else
-        not_found
-      end
+      Mail.delete_message!(params[:id], current_user)
     end
 
     not_found do

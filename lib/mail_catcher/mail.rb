@@ -16,51 +16,53 @@ module MailCatcher::Mail extend self
     end
   end
 
-  def messages(owners=nil)
-    collection.find.sort(:created_at => -1)
+  def messages(user=nil)
+    collection.find(filter_for_user(user)).sort(:created_at => -1)
       .map { |doc| MailCatcher::Message.from_mongo(doc) }
-      .select { |m| !owners || !m.to_h[:owner] || owners.include?(m.to_h[:owner]) }
   end
 
-  def message(id)
-    if (id = to_bson_object_id(id)).nil?
-      nil
-    else
-      doc = collection.find({ :_id => id }).limit(1).first
+  def message(id, user=nil)
+    raise NotFoundException if (id = to_bson_object_id(id)).nil?
 
-      if doc.nil?
-        nil
-      else
-        MailCatcher::Message.from_mongo(doc)
-      end
-    end
+    doc = collection.find({ :_id => id }).limit(1).first
+
+    raise NotFoundException if doc.nil?
+
+    message = MailCatcher::Message.from_mongo(doc)
+
+    return message unless user
+
+    raise AccessDeniedException unless user.allowed_owner?(message.to_h[:owner])
+
+    message
   end
 
-  def delete!
-    collection.find.delete_many.n > 0
+  def delete!(user=nil)
+    collection.find(filter_for_user(user)).delete_many.n > 0
   end
 
-  def delete_by_owner!(owner)
+  def delete_by_owner!(owner, user=nil)
+    raise AccessDeniedException if user && !user.allowed_owner?(owner)
+
     collection.find({ :owner => owner }).delete_many.n > 0
   end
 
-  def delete_message!(id)
-    if (id = to_bson_object_id(id)).nil?
-      false
-    else
-      collection.find({ :_id => id }).delete_one.n > 0
-    end
+  def delete_message!(id, user=nil)
+    message(id, user)
+    collection.find({ :_id => to_bson_object_id(id) }).delete_one.n > 0
   end
 
-  def mark_readed(id)
-    if (id = to_bson_object_id(id)).nil?
-      false
-    else
-      collection.find({ :_id => id }).update_one({ :$set => { :new => 0 } }).n > 0
-    end
+  def mark_readed(id, user=nil)
+    message(id, user)
+    collection.find({ :_id => to_bson_object_id(id) }).update_one({ :$set => { :new => 0 } }).n > 0
   end
 
   private
+
+  def filter_for_user(user)
+    user && user.owners ?
+      { "owner" => { :$in => user.owners } } : nil
+  end
 
   def db
     @db ||= begin
