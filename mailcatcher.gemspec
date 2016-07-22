@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     "lib/**/*.rb",
     "public/**/*",
     "views/**/*",
-  ] - Dir["lib/mail_catcher/web/assets.rb"]
+  ]
   s.require_paths = ["lib"]
   s.executables = ["mailcatcher", "catchmail"]
   s.extra_rdoc_files = ["README.md", "LICENSE"]

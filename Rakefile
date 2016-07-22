@@ -13,8 +13,16 @@ task "assets" do
   compiled_path = File.expand_path("../public/assets", __FILE__)
   FileUtils.mkdir_p(compiled_path)
 
-  require "mail_catcher/web/assets"
-  sprockets = MailCatcher::Web::Assets
+  require 'sprockets'
+  require 'sprockets-sass'
+  require 'compass'
+  require 'sprockets-helpers'
+
+  sprockets = Sprockets::Environment.new(File.expand_path('../assets', __FILE__)).tap do |sprockets|
+    Dir["#{sprockets.root}/**/*/"].each do |path|
+      sprockets.append_path(path)
+    end
+  end
   sprockets.css_compressor = :sass
   sprockets.js_compressor = :uglifier
   sprockets.each_logical_path(/(\Amailcatcher\.(js|css)|\.(xsl|png)\Z)/) do |logical_path|
