@@ -28,26 +28,16 @@ module MailCatcher
 
         if item[:owners].nil?
           owners = nil
+        elsif item[:owners].is_a?(Array)
+          owners = item[:owners].map(&:to_s).uniq
         else
-          owners = item[:owners].is_a?(Array) ? item[:owners] : [item[:owners]]
-          owners.reject(&:nil?).map(&:to_s).uniq
-        end
-
-        if owners.is_a?(Array) && owners.empty?
-          raise "Invalid owners for user '#{name}' at index \##{index}, it should be nil or array with at least one element"
+          raise "Invalid owners for user '#{name}' at index \##{index}, it should be nil or array"
         end
 
         @users << User.new.tap do |user|
           user.name = name
           user.password = password
-          user.owners = begin
-            if item[:owners].nil?
-              nil
-            else
-              owners = item[:owners].is_a?(Array) ? item[:owners] : [item[:owners]]
-              owners.reject(&:nil?).map(&:to_s).uniq
-            end
-          end
+          user.owners = owners
         end
       end
     end

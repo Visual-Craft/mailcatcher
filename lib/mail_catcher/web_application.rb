@@ -6,6 +6,8 @@ require 'skinny'
 require 'json'
 require 'mail_catcher/events'
 require 'mail_catcher/mail'
+require 'jwt'
+require "sinatra/cookies"
 
 class Sinatra::Request
   include Skinny::Helpers
@@ -23,6 +25,8 @@ module MailCatcher
         set :environment, MailCatcher.env
         set :root, MailCatcher.root_dir
 
+        helpers Sinatra::Cookies
+
         configure do
           helpers do
             def javascript_tag(name)
@@ -32,20 +36,18 @@ module MailCatcher
             def stylesheet_tag(name)
               %{<link rel="stylesheet" href="/assets/#{name}.css">}
             end
+
+            def current_user
+              nil
+            end
           end
         end
 
         configure :development do
-          require 'sprockets'
-          require 'sprockets-sass'
-          require 'compass'
+          require 'mail_catcher/web_assets'
           require 'sprockets-helpers'
 
-          assets_env = Sprockets::Environment.new(File.expand_path('assets', MailCatcher.root_dir)).tap do |sprockets|
-            Dir["#{sprockets.root}/**/*/"].each do |path|
-              sprockets.append_path(path)
-            end
-          end
+          assets_env = MailCatcher::WebAssets
           assets_prefix = 'assets_dev'
 
           Sprockets::Helpers.configure do |config|
@@ -66,6 +68,61 @@ module MailCatcher
             assets_env.call(sub_env)
           end
         end
+
+        if MailCatcher.users.no_auth?
+          configure do
+            helpers do
+              def current_user
+                nil
+              end
+            end
+          end
+        else
+          configure do
+            helpers do
+              def authorized?
+                !!current_user
+              end
+
+              def authorize!
+                error(403, 'Forbidden') unless authorized?
+              end
+
+              def current_user
+                MailCatcher.users.find(token['data']) if token
+              end
+
+              def generate_token(data)
+                JWT.encode({ data: data }, MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm])
+              end
+
+              def token
+                JWT.decode(cookies['AUTH'] || params['AUTH'], MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm]).first
+              rescue
+                nil
+              end
+            end
+
+            before do
+              if MailCatcher.users.no_auth? || request.path_info == '/api/check-auth' || request.path_info == '/api/login' || !/\A\/api\//.match(request.path_info)
+                return
+              end
+
+              authorize!
+            end
+
+            post '/api/login' do
+              user = MailCatcher.users.find(params[:login])
+
+              if user && user.password == params[:pass]
+                content_type 'text/plain'
+                generate_token(user.name)
+              else
+                error(401, 'Unauthorized')
+              end
+            end
+          end
+        end
       end
 
       @class_initialized = true
@@ -75,9 +132,17 @@ module MailCatcher
       erb :index
     end
 
+    get '/api/check-auth' do
+      content_type(:json)
+      JSON.generate({
+        :status => MailCatcher.users.no_auth? || authorized?,
+        :no_auth => MailCatcher.users.no_auth?,
+      })
+    end
+
     get '/api/messages' do
-      content_type :json
-      messages = Mail.messages.map { |message| message.to_short_hash }
+      content_type(:json)
+      messages = Mail.messages(current_user).map { |message| message.to_short_hash }
       JSON.generate(messages)
     end
 
@@ -86,7 +151,7 @@ module MailCatcher
         request.websocket!(
           :on_start => proc do |websocket|
             subscription = Events::MessageAdded.subscribe do |message|
-              websocket.send_message(JSON.generate(message.to_short_hash))
+              websocket.send_message(JSON.generate(message.to_short_hash)) if MailCatcher.users.no_auth? || current_user.try(:allowed_owner?, message.to_h[:owner])
             end
 
             # send ping responses to correctly work with forward proxies
@@ -111,44 +176,36 @@ module MailCatcher
       owner = params[:owner]
 
       if owner.nil?
-        Mail.delete!
+        Mail.delete!(current_user)
       else
-        Mail.delete_by_owner!(owner)
+        Mail.delete_by_owner!(owner, current_user)
       end
 
       status 204
     end
 
     get '/api/messages/:id' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
-      if message
-        content_type :json
-        JSON.generate(message.to_short_hash)
-      else
-        not_found
-      end
+      content_type(:json)
+      JSON.generate(message.to_short_hash)
     end
 
     get '/api/messages/:id/source' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
-      if message
-        if params.has_key?('download')
-          content_type('message/rfc822')
-          attachment('message.eml')
-          message.source
-        else
-          content_type('text/plain')
-          message.source
-        end
+      if params.has_key?('download')
+        content_type('message/rfc822')
+        attachment('message.eml')
+        message.source
       else
-        not_found
+        content_type('text/plain')
+        message.source
       end
     end
 
     get '/api/messages/:id/part/:part_id/body' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
       if message && (part = message.parts[params[:part_id].to_sym])
         content_type(part[:type], :charset => (part[:charset] || 'utf8'))
@@ -159,7 +216,7 @@ module MailCatcher
     end
 
     get '/api/messages/:id/attachment/:attachment_id/body' do
-      message = Mail.message(params[:id])
+      message = Mail.message(params[:id], current_user)
 
       if message && (part = message.attachments[params[:attachment_id].to_sym])
         content_type(part[:type], :charset => (part[:charset] || 'utf8'))
@@ -171,23 +228,23 @@ module MailCatcher
     end
 
     post '/api/messages/:id/mark-readed' do
-      if Mail.mark_readed(params[:id])
-        status 204
-      else
-        not_found
-      end
+      Mail.mark_readed(params[:id], current_user)
     end
 
     delete '/api/messages/:id' do
-      if Mail.delete_message!(params[:id])
-        status 204
-      else
-        not_found
-      end
+      Mail.delete_message!(params[:id], current_user)
     end
 
     not_found do
       'Not Found'
+    end
+
+    error do |e|
+      if e.is_a? MailCatcher::Mail::NotFoundException
+        not_found
+      elsif e.is_a? MailCatcher::Mail::AccessDeniedException
+        error(403, 'Forbidden')
+      end
     end
   end
 end

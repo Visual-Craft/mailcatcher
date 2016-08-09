@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     "lib/**/*.rb",
     "public/**/*",
     "views/**/*",
-  ] - Dir["lib/mail_catcher/web/assets.rb"]
+  ]
   s.require_paths = ["lib"]
   s.executables = ["mailcatcher", "catchmail"]
   s.extra_rdoc_files = ["README.md", "LICENSE"]
@@ -36,6 +36,9 @@ Gem::Specification.new do |s|
   s.add_dependency "thin", "~> 1.5.0"
   s.add_dependency "skinny", "~> 0.2.3"
   s.add_dependency 'mongo', '~> 2.2.5'
+  s.add_dependency 'jwt', '~> 1.5.1'
+  s.add_dependency 'sinatra-contrib', '~> 1.4.7'
+
 
   s.add_development_dependency "coffee-script"
   s.add_development_dependency "compass"

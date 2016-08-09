@@ -19,6 +19,8 @@ module MailCatcher
         },
         :verbose => false,
         :password => nil,
+        :token_algorithm => nil,
+        :token_secret => nil,
         :users => nil,
       }
       merge!(defaults.merge(opts))
