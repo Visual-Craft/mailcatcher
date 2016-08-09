@@ -11,9 +11,16 @@ http:
 password: ~
 verbose: false
 token_secret: 'XAiOjJKv1QiLCJhb'
-token_algorithm: 'HS256'
 users:
   -
-    name: 'test'
+    name: 'test1'
     password: '123'
-    owners: ~
+    owners: ~ # allowed all messages
+  -
+    name: 'test2'
+    password: '123'
+    owners: [] # disallow all messages
+  -
+    name: 'test3'
+    password: '123'
+    owners: ['foo', ''] # allowed 'foo' owner and messages with no owner
