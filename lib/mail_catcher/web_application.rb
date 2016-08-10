@@ -151,7 +151,7 @@ module MailCatcher
         request.websocket!(
           :on_start => proc do |websocket|
             subscription = Events::MessageAdded.subscribe do |message|
-              websocket.send_message(JSON.generate(message.to_short_hash)) if MailCatcher.users.no_auth? || current_user.try(:allowed_owner?, message.to_h[:owner])
+              websocket.send_message(JSON.generate(message.to_short_hash)) if MailCatcher.users.no_auth? || MailCatcher.users.allowed_owner?(current_user, message.to_h[:owner])
             end
 
             # send ping responses to correctly work with forward proxies
