@@ -15,7 +15,7 @@ users:
   -
     name: 'test1'
     password: '123'
-    owners: ~ # allowed all messages
+    owners: '!all' # allowed all messages
   -
     name: 'test2'
     password: '123'
@@ -24,3 +24,7 @@ users:
     name: 'test3'
     password: '123'
     owners: ['foo', ''] # allowed 'foo' owner and messages with no owner
+  -
+    name: 'test4'
+    password: '123'
+    owners: ['!unassigned', 'boo'] # allowed all messages without 'foo' and no owner and with 'boo' owner
