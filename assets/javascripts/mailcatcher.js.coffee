@@ -442,12 +442,26 @@ jQuery(() ->
 
             result = []
             addPresentation = (type, id = null, contentType = null) -> result.push({ type: type, id: id, contentType: contentType })
+            priorityPresentation = (item) ->
+              switch item.contentType
+                when 'text/html' then 0
+                when 'text/plain' then 1
+                when null then 3
+                else 2
+
 
             for k,p of this.selectedMessage.parts
               addPresentation('part', p.id, p.type)
 
             addPresentation('source')
 
-            result
+            result.sort((a, b) ->
+              if priorityPresentation(a) < priorityPresentation(b)
+                -1
+              else if priorityPresentation(a) == priorityPresentation(b)
+                0
+              else
+                1
+            )
   )
 )
