@@ -203,9 +203,6 @@ jQuery(() ->
                     })
               )
 
-          wrapUrl: (url) ->
-            url
-
           subscribe: () ->
             if WebSocket?
               return if this.websocket
@@ -314,7 +311,7 @@ jQuery(() ->
             false
 
           downloadUrl: (message) ->
-            this.wrapUrl("/api/messages/#{message.id}/source?download")
+            "/api/messages/#{message.id}/source?download"
 
           presentationDisplayName: (presentation) ->
             if presentation.type == 'source'
@@ -368,17 +365,17 @@ jQuery(() ->
 
           selectedPresentationUrl: () ->
             unless this.selectedPresentation
-              null
+              'about:blank'
             else if this.selectedPresentation.type == 'source'
-              this.wrapUrl("/api/messages/#{this.selectedMessage.id}/source")
+              "/api/messages/#{this.selectedMessage.id}/source"
             else
-              this.wrapUrl("/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body")
+              "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body"
 
           hasAttachments: (message) ->
             not _.isEmpty(message.attachments)
 
           attachmentUrl: (message, attachment) ->
-            this.wrapUrl("/api/messages/#{message.id}/attachment/#{attachment.id}/body")
+            "/api/messages/#{message.id}/attachment/#{attachment.id}/body"
 
           logout: () ->
             Cookies.set('AUTH', null)
