@@ -15,7 +15,7 @@
         <form v-on:submit.prevent="loginSubmit">
           <ul>
             <li class="login"><input v-model="username" placeholder="login" /></li>
-            <li class="password"><input v-model="password" placeholder="password" /></li>
+            <li class="password"><input v-model="password" type="password" /></li>
             <li><input type="submit" value="Login" /></li>
           </ul>
         </form>
@@ -29,6 +29,7 @@
       <nav class="app">
         <ul>
           <li class="search"><input type="search" placeholder="Search messages..." incremental="true" v-model="search" /></li>
+          <li class="username" v-if="showLogoutButton() && userName()"><div style="padding: 11px;">{{ userName() }}</div></li>
           <li class="logout"><div class="button"  v-if="showLogoutButton()" v-on:click="logout()">Logout</div></li>
         </ul>
       </nav>

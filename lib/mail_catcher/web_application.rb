@@ -137,6 +137,7 @@ module MailCatcher
       JSON.generate({
         :status => MailCatcher.users.no_auth? || authorized?,
         :no_auth => MailCatcher.users.no_auth?,
+        :username => current_user.try(:name),
       })
     end
 

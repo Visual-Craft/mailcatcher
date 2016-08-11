@@ -53,7 +53,7 @@ jQuery(() ->
         .done((data) =>
           if data && data.status
             this.noAuth = data.no_auth
-            this.toMain()
+            this.toMain(data.username)
           else
             this.toLogin()
             noty({
@@ -66,13 +66,16 @@ jQuery(() ->
 
     data:
       currentComponent: null
+      currentUserName: null
       noAuth: false
 
     methods:
       toLogin: () ->
+        this.currentUserName = null
         this.currentComponent = 'login'
 
-      toMain: () ->
+      toMain: (username = null) ->
+        this.currentUserName = username
         this.currentComponent = 'main'
 
       authToken: () ->
@@ -102,7 +105,7 @@ jQuery(() ->
               type: "POST"
               success: (token) =>
                 Cookies.set('AUTH', token)
-                this.$parent.toMain()
+                this.$parent.toMain(this.username)
               error: () ->
                 noty({
                   text: "Invalid login or password"
@@ -202,9 +205,6 @@ jQuery(() ->
                       type: 'error'
                     })
               )
-
-          wrapUrl: (url) ->
-            url
 
           subscribe: () ->
             if WebSocket?
@@ -314,7 +314,7 @@ jQuery(() ->
             false
 
           downloadUrl: (message) ->
-            this.wrapUrl("/api/messages/#{message.id}/source?download")
+            "/api/messages/#{message.id}/source?download"
 
           presentationDisplayName: (presentation) ->
             if presentation.type == 'source'
@@ -370,15 +370,15 @@ jQuery(() ->
             unless this.selectedPresentation
               null
             else if this.selectedPresentation.type == 'source'
-              this.wrapUrl("/api/messages/#{this.selectedMessage.id}/source")
+              "/api/messages/#{this.selectedMessage.id}/source"
             else
-              this.wrapUrl("/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body")
+              "/api/messages/#{this.selectedMessage.id}/part/#{this.selectedPresentation.id}/body"
 
           hasAttachments: (message) ->
             not _.isEmpty(message.attachments)
 
           attachmentUrl: (message, attachment) ->
-            this.wrapUrl("/api/messages/#{message.id}/attachment/#{attachment.id}/body")
+            "/api/messages/#{message.id}/attachment/#{attachment.id}/body"
 
           logout: () ->
             Cookies.set('AUTH', null)
@@ -386,6 +386,9 @@ jQuery(() ->
 
           showLogoutButton: () ->
             !this.$parent.noAuth
+
+          userName: () ->
+            this.$parent.currentUserName
 
         computed:
           folders: () ->
@@ -442,12 +445,26 @@ jQuery(() ->
 
             result = []
             addPresentation = (type, id = null, contentType = null) -> result.push({ type: type, id: id, contentType: contentType })
+            priorityPresentation = (item) ->
+              switch item.contentType
+                when 'text/html' then 0
+                when 'text/plain' then 1
+                when null then 3
+                else 2
+
 
             for k,p of this.selectedMessage.parts
               addPresentation('part', p.id, p.type)
 
             addPresentation('source')
 
-            result
+            result.sort((a, b) ->
+              if priorityPresentation(a) < priorityPresentation(b)
+                -1
+              else if priorityPresentation(a) == priorityPresentation(b)
+                0
+              else
+                1
+            )
   )
 )
