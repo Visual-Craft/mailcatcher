@@ -84,7 +84,9 @@ module MailCatcher::Mail extend self
         ::Logger::FATAL
       end
 
-      Mongo::Client.new(["#{host}:#{port}"], options)
+      client = Mongo::Client.new(["#{host}:#{port}"], options)
+      client[:messages].indexes.create_one({ created_at: -1 })
+      client
     end
   end
 
