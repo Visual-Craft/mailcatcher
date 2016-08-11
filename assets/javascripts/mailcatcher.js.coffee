@@ -53,7 +53,7 @@ jQuery(() ->
         .done((data) =>
           if data && data.status
             this.noAuth = data.no_auth
-            this.toMain()
+            this.toMain(data.username)
           else
             this.toLogin()
             noty({
@@ -66,13 +66,16 @@ jQuery(() ->
 
     data:
       currentComponent: null
+      currentUserName: null
       noAuth: false
 
     methods:
       toLogin: () ->
+        this.currentUserName = null
         this.currentComponent = 'login'
 
-      toMain: () ->
+      toMain: (username = null) ->
+        this.currentUserName = username
         this.currentComponent = 'main'
 
       authToken: () ->
@@ -102,7 +105,7 @@ jQuery(() ->
               type: "POST"
               success: (token) =>
                 Cookies.set('AUTH', token)
-                this.$parent.toMain()
+                this.$parent.toMain(this.username)
               error: () ->
                 noty({
                   text: "Invalid login or password"
@@ -386,6 +389,9 @@ jQuery(() ->
 
           showLogoutButton: () ->
             !this.$parent.noAuth
+
+          userName: () ->
+            this.$parent.currentUserName
 
         computed:
           folders: () ->
