@@ -346,14 +346,19 @@ jQuery(() ->
 
           scrollToRow: (message) ->
             row = $("[data-message-id='#{message.id}']")
-            relativePosition = row.offset().top - $("#messages").offset().top
+
+            if row.length == 0
+              return
+
+            $messages = $("#messages")
+            relativePosition = row.offset().top - $messages.offset().top
 
             if relativePosition < 0
-              $("#messages").scrollTop($("#messages").scrollTop() + relativePosition - 20)
+              $messages.scrollTop($messages.scrollTop() + relativePosition - 20)
             else
-              overflow = relativePosition + row.height() - $("#messages").height()
+              overflow = relativePosition + row.height() - $messages.height()
               if overflow > 0
-                $("#messages").scrollTop($("#messages").scrollTop() + overflow + 20)
+                $messages.scrollTop($messages.scrollTop() + overflow + 20)
 
           selectPresentation: (presentation) ->
             this.selectedPresentation = presentation
