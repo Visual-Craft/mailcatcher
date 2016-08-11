@@ -1,14 +1,11 @@
 module MailCatcher
   class User
-    attr_accessor :name, :password, :owners
+    attr_accessor :name, :password, :owners, :all_owners, :unassigned_owners
 
-    def restrict_owners?
-      !owners.nil?
-    end
-
-    def allowed_owner?(owner)
-      return true if !restrict_owners? || owner.nil?
-      owners.include?(owner.to_s)
+    def initialize
+      @all_owners = false
+      @unassigned_owners = false
+      @owners = []
     end
   end
 end

@@ -32,7 +32,7 @@ module MailCatcher::Mail extend self
 
     return message unless user
 
-    raise AccessDeniedException unless user.allowed_owner?(message.to_h[:owner])
+    raise AccessDeniedException unless MailCatcher.users.allowed_owner?(user, message.to_h[:owner])
 
     message
   end
@@ -42,7 +42,7 @@ module MailCatcher::Mail extend self
   end
 
   def delete_by_owner!(owner, user=nil)
-    raise AccessDeniedException if user && !user.allowed_owner?(owner)
+    raise AccessDeniedException if user && !MailCatcher.users.allowed_owner?(user, owner)
 
     collection.find({ :owner => owner }).delete_many.n > 0
   end
@@ -59,9 +59,17 @@ module MailCatcher::Mail extend self
 
   private
 
+  # @param [MailCatcher::User] user
   def filter_for_user(user)
-    user && user.owners ?
-      { "owner" => { :$in => user.owners } } : nil
+    if user.all_owners
+      return nil
+    end
+
+    if user.unassigned_owners
+      { :$or => [{ "owner" => { :$in => user.owners } }, { "owner" => { :$nin => MailCatcher.users.assigned_owners } }] }
+    else
+      { "owner" => { :$in => user.owners } }
+    end
   end
 
   def db
