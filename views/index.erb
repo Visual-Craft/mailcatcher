@@ -99,7 +99,7 @@
           </ul>
         </nav>
       </header>
-      <iframe class="body" v-bind:src="selectedPresentationUrl()"></iframe>
+      <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()"></iframe>
     </article>
   </template>
 

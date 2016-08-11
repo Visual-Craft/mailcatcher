@@ -365,7 +365,7 @@ jQuery(() ->
 
           selectedPresentationUrl: () ->
             unless this.selectedPresentation
-              'about:blank'
+              null
             else if this.selectedPresentation.type == 'source'
               "/api/messages/#{this.selectedMessage.id}/source"
             else
