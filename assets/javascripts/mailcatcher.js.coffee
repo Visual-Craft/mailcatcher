@@ -160,6 +160,7 @@ jQuery(() ->
               if messages.length == 0
                 this.selectedMessage = null
               else
+                messages = _.filter(messages, this.filterMessage)
                 selectedId = this.selectedMessage.id
                 findById = (v) -> selectedId == v.id
                 selectedFound = _.any(messages, findById)
@@ -466,5 +467,8 @@ jQuery(() ->
               else
                 1
             )
+
+          filteredMessages: () ->
+            _.filter(this.messages, this.filterMessage)
   )
 )

@@ -59,7 +59,7 @@
               </tr>
               </thead>
               <tbody>
-                  <tr v-for="message in messages | filterBy filterMessage" track-by="id" v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }" v-bind:data-message-id="message.id" v-on:click="selectMessage(message)">
+                  <tr v-for="message in filteredMessages" track-by="id" v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }" v-bind:data-message-id="message.id" v-on:click="selectMessage(message)">
                     <td v-bind:class="{ 'blank': !message.sender }">{{ message.sender || "No sender" }}</td>
                     <td v-bind:class="{ 'blank': !message.recipients || !message.recipients.length }">{{ (message.recipients || []).join(", ") || "No receipients" }}</td>
                     <td v-bind:class="{ 'blank': !message.subject }">{{ message.subject || "No subject" }}</td>
