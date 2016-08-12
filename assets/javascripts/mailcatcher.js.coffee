@@ -396,6 +396,10 @@ jQuery(() ->
           userName: () ->
             this.$parent.currentUserName
 
+          preparePresentationContent: (event) ->
+            if this.selectedPresentation && this.selectedPresentation.contentType == 'text/html'
+              $(event.target).contents().find('a').attr('target','_blank')
+
         computed:
           folders: () ->
             result = []
