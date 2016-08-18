@@ -63,7 +63,7 @@
                     <td v-bind:class="{ 'blank': !message.sender }">{{ message.sender || "No sender" }}</td>
                     <td v-bind:class="{ 'blank': !message.recipients || !message.recipients.length }">{{ (message.recipients || []).join(", ") || "No receipients" }}</td>
                     <td v-bind:class="{ 'blank': !message.subject }">{{ message.subject || "No subject" }}</td>
-                    <td>{{ message.created_at | moment "dddd, d MMM Y HH:mm:ss" }}</td>
+                    <td>{{ message.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</td>
                   </tr>
               </tbody>
             </table>
