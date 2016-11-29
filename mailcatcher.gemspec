@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mongo', '~> 2.2.5'
   s.add_dependency 'jwt', '~> 1.5.1'
   s.add_dependency 'sinatra-contrib', '~> 1.4.7'
+  s.add_dependency 'json', '~> 2.0.2'
 
 
   s.add_development_dependency "coffee-script"
