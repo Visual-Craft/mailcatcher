@@ -4,16 +4,66 @@ require 'mail_catcher/utils'
 
 module MailCatcher
   class Message < MailCatcher::MongoEntity
-    define_field :id, nil
-    define_field :owner, nil
-    define_field :sender, nil
-    define_field :recipients, nil
-    define_field :subject, nil
-    define_field :source, nil
-    define_field :size, nil
-    define_field :new, nil
-    define_field :created_at, nil
-    define_field :attachments, []
+    class SourceProcessor
+      def self.to_mongo(value)
+        if value.is_a?(String)
+          BSON::Binary.new(value)
+        else
+          value
+        end
+      end
+
+      def self.from_mongo(value)
+        if value.is_a?(BSON::Binary)
+          value.data
+        else
+          value
+        end
+      end
+    end
+
+    class AttachmentsProcessor
+      def self.to_mongo(value)
+        if value.is_a?(Hash)
+          value.each do |_,v|
+            if v[:body].is_a?(String)
+              v[:body] = BSON::Binary.new(v[:body])
+            end
+          end
+        else
+          value
+        end
+      end
+
+      def self.from_mongo(value)
+        if value.is_a?(BSON::Binary)
+          value.data
+        else
+          value
+        end
+
+        if value.is_a?(Hash)
+          value.each do |_,v|
+            if v[:body].is_a?(BSON::Binary)
+              v[:body] = v[:body].data
+            end
+          end
+        else
+          value
+        end
+      end
+    end
+
+    define_field :id
+    define_field :owner
+    define_field :sender
+    define_field :recipients
+    define_field :subject
+    define_field :source, nil, SourceProcessor
+    define_field :size
+    define_field :new
+    define_field :created_at
+    define_field :attachments, [], AttachmentsProcessor
     define_field :parts, []
 
     class << self
@@ -24,7 +74,7 @@ module MailCatcher
           sender: data[:sender],
           recipients: data[:recipients],
           subject: mail.subject,
-          source: MailCatcher::BinaryString.new(data[:source]),
+          source: data[:source],
           size: data[:source].length,
           new: 1,
           created_at: Time.now,
@@ -49,7 +99,7 @@ module MailCatcher
             type: type,
             filename: part.filename,
             charset: part.charset,
-            body: MailCatcher::BinaryString.new(body),
+            body: body,
             size: body.length,
           }
           part_ids[part_key] += 1

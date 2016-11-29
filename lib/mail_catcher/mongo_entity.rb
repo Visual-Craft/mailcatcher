@@ -5,11 +5,15 @@ module MailCatcher
   class MongoEntity
     # @param [String|Symbol] name
     # @param [Object] default_value
-    def self.define_field(name, default_value)
+    # @param [Object] processor
+    def self.define_field(name, default_value = nil, processor = nil)
       name = name.to_sym
       attr_accessor(name)
       @fields ||= {}
-      @fields[name] = default_value
+      @fields[name] = {
+          :default => default_value,
+          :processor => processor,
+      }
     end
 
     # @return [Hash]
@@ -23,11 +27,10 @@ module MailCatcher
       hash = MailCatcher::Utils.symbolize_hash_keys(hash)
       id = hash.delete(:_id)
       hash[:id] = id.to_s unless id.nil?
-      hash = MailCatcher::Utils.recursive_walk(hash) do |v|
-        if v.is_a? BSON::Binary
-          v.data
-        else
-          v
+
+      fields.each do |k,v|
+        if v[:processor].respond_to?(:from_mongo)
+          hash[k] = v[:processor].from_mongo(hash[k])
         end
       end
 
@@ -41,7 +44,7 @@ module MailCatcher
       inst = new
 
       self.fields.each do |k,v|
-        inst.send(:"#{k}=", hash.has_key?(k) ? hash[k] : v)
+        inst.send(:"#{k}=", hash.has_key?(k) ? hash[k] : v[:default])
       end
 
       inst
@@ -49,7 +52,7 @@ module MailCatcher
 
     def initialize
       self.class.fields.each do |k,v|
-        send(:"#{k}=", v)
+        send(:"#{k}=", v[:default])
       end
     end
 
@@ -58,13 +61,13 @@ module MailCatcher
       hash = to_h
       hash.delete(:id)
 
-      MailCatcher::Utils.recursive_walk(hash) do |v|
-        if v.is_a? MailCatcher::BinaryString
-          BSON::Binary.new(v.data)
-        else
-          v
+      self.class.fields.each do |k,v|
+        if v[:processor].respond_to?(:to_mongo)
+          hash[k] = v[:processor].to_mongo(hash[k])
         end
       end
+
+      hash
     end
 
     # @return [Hash]
@@ -74,16 +77,6 @@ module MailCatcher
         hash[k] = send(k)
       end
       hash
-    end
-  end
-
-  class BinaryString
-    def initialize(data)
-      @data = data
-    end
-
-    def data
-      @data
     end
   end
 end
