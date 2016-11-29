@@ -24,7 +24,7 @@ module MailCatcher
           sender: data[:sender],
           recipients: data[:recipients],
           subject: mail.subject,
-          source: data[:source],
+          source: MailCatcher::BinaryString.new(data[:source]),
           size: data[:source].length,
           new: 1,
           created_at: Time.now,
@@ -49,7 +49,7 @@ module MailCatcher
             type: type,
             filename: part.filename,
             charset: part.charset,
-            body: body,
+            body: MailCatcher::BinaryString.new(body),
             size: body.length,
           }
           part_ids[part_key] += 1

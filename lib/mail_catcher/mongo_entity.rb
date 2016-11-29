@@ -1,4 +1,5 @@
 require 'mail_catcher/utils'
+require 'bson'
 
 module MailCatcher
   class MongoEntity
@@ -22,6 +23,13 @@ module MailCatcher
       hash = MailCatcher::Utils.symbolize_hash_keys(hash)
       id = hash.delete(:_id)
       hash[:id] = id.to_s unless id.nil?
+      hash = MailCatcher::Utils.recursive_walk(hash) do |v|
+        if v.is_a? BSON::Binary
+          v.data
+        else
+          v
+        end
+      end
 
       from_h(hash)
     end
@@ -49,7 +57,14 @@ module MailCatcher
     def to_mongo
       hash = to_h
       hash.delete(:id)
-      hash
+
+      MailCatcher::Utils.recursive_walk(hash) do |v|
+        if v.is_a? MailCatcher::BinaryString
+          BSON::Binary.new(v.data)
+        else
+          v
+        end
+      end
     end
 
     # @return [Hash]
@@ -59,6 +74,16 @@ module MailCatcher
         hash[k] = send(k)
       end
       hash
+    end
+  end
+
+  class BinaryString
+    def initialize(data)
+      @data = data
+    end
+
+    def data
+      @data
     end
   end
 end
