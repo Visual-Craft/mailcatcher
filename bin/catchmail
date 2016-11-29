@@ -74,7 +74,7 @@ end
 message = Mail.new
 message.body = $stdin.read
 message.return_path = options[:from] if options[:from]
-options[:attachments].each do |attachment|
+options[:attachments] && options[:attachments].each do |attachment|
   message.add_file(attachment)
 end
 
