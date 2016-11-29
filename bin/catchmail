@@ -41,6 +41,11 @@ OptionParser.new do |parser|
     options[:password] = password
   end
 
+  parser.on('-a attachment', 'Add attachment') do |attachment|
+    options[:attachments] ||= []
+    options[:attachments] << attachment
+  end
+
   parser.on('-oi', 'Ignored option -oi') do |ignored|
   end
   parser.on('-t', 'Ignored option -t') do |ignored|
@@ -69,6 +74,9 @@ end
 message = Mail.new
 message.body = $stdin.read
 message.return_path = options[:from] if options[:from]
+options[:attachments].each do |attachment|
+  message.add_file(attachment)
+end
 
 ARGV.each do |recipient|
   if message.to.nil?
