@@ -61,7 +61,7 @@ module MailCatcher::Mail extend self
 
   # @param [MailCatcher::User] user
   def filter_for_user(user)
-    if user.all_owners
+    if !user || user.all_owners
       return nil
     end
 
