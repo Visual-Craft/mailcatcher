@@ -143,7 +143,7 @@ jQuery(() ->
           this.resizer = new Resizer($("#resizer"), (height) =>
             blockHeight = Math.max(height, 60) - $(".wrapper").offset().top
             $(".folders-wrapper").css(height: blockHeight)
-            $("#messages").css(height: blockHeight + 14)
+            $("#messages").css(height: blockHeight + 4)
           )
 
         data: () ->
