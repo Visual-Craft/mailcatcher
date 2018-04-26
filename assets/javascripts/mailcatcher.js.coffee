@@ -400,6 +400,11 @@ jQuery(() ->
             if this.selectedPresentation && this.selectedPresentation.contentType == 'text/html'
               $(event.target).contents().find('a').attr('target','_blank')
 
+          toggleMessageHeight: () ->
+            $(".folders-wrapper").slideToggle(300)
+            $("#messages").slideToggle(300)
+            $("#message").toggleClass('is-full-height')
+
         computed:
           folders: () ->
             result = []
