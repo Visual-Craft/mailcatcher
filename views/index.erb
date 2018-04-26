@@ -3,7 +3,8 @@
 <head>
   <title>MailCatcher</title>
   <link href="/favicon.ico" rel="icon" />
-  <%= stylesheet_tag "mailcatcher" %>
+  <link rel="stylesheet" href="/assets/mailcatcher.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body id="mc-app" v-cloak>
   <component :is="currentComponent"></component>
@@ -41,7 +42,9 @@
           <div class="folders-wrapper">
             <ul>
               <li v-for="folder in folders" class="noselect" v-bind:class="{ 'selected': selectedOwner === folder.owner }">
-                <span class="folder-name" v-on:click="selectOwner(folder.owner)">{{ folder.name }} ({{ folder.count.total }} total, {{ folder.count.new }} new)</span>
+                <span class="folder-name" v-on:click="selectOwner(folder.owner)">
+                    <div>{{ folder.name }} ({{ folder.count.total }} total, {{ folder.count.new }} new)</div>
+                </span>
                 <span class="clear-folder" v-if="folder.count.total > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
               </li>
             </ul>
@@ -73,34 +76,49 @@
     </table>
     <div id="resizer"><div class="ruler"></div></div>
     <article id="message" v-if="selectedMessage">
-      <header>
-        <dl class="metadata">
-          <dt class="created_at">Received</dt>
-          <dd class="created_at">{{ selectedMessage.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</dd>
-          <dt class="from">From</dt>
-          <dd class="from">{{ selectedMessage.sender || "No sender" }}</dd>
-          <dt class="to">To</dt>
-          <dd class="to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</dd>
-          <dt class="subject">Subject</dt>
-          <dd class="subject">{{ selectedMessage.subject || "No subject" }}</dd>
-          <dt class="attachments" v-if="hasAttachments(selectedMessage)">Attachments</dt>
-          <dd class="attachments" v-if="hasAttachments(selectedMessage)">
+        <div class="message-left">
+          <header>
+              <ul class="metadata">
+                <li>
+                  <div class="metadata-title created_at">Received</div>
+                  <div class="created_at">{{ selectedMessage.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</div>
+                </li>
+                <li>
+                  <div class="metadata-title from">From</div>
+                  <div class="from">{{ selectedMessage.sender || "No sender" }}</div>
+                </li>
+                <li>
+                  <div class="metadata-title to">To</div>
+                  <div class="to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</div>
+                </li>
+                <li>
+                  <div class="metadata-title subject">Subject</div>
+                  <div class="subject">{{ selectedMessage.subject || "No subject" }}</div>
+                </li>
+                <li v-if="hasAttachments(selectedMessage)">
+                  <div class="metadata-title attachments">Attachments</div>
+                  <div class="attachments">
+                      <ul>
+                        <li v-for="(id, attachment) in selectedMessage.attachments"><a href="{{ attachmentUrl(selectedMessage, attachment) }}" target="_blank">{{ attachment.filename }}</a></li>
+                      </ul>
+                   </div>
+                </li>
+              </ul>
+          </header>
+        </div>
+        <div class="message-right">
+          <nav class="views">
             <ul>
-              <li v-for="(id, attachment) in selectedMessage.attachments"><a href="{{ attachmentUrl(selectedMessage, attachment) }}" target="_blank">{{ attachment.filename }}</a></li>
+              <li class="format tab" v-for="presentation in presentations" v-bind:class="{ 'selected': isPresentationSelected(presentation) }" v-on:click="selectPresentation(presentation)">
+                <a href="#">{{ presentationDisplayName(presentation) }}</a>
+              </li>
+              <li class="action toggle-height"><a href="#" class="button" v-on:click="toggleMessageHeight()"><span>Toggle height</span></a></li>
+              <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank"><span>Download</span></a></li>
+              <li class="action delete"><a href="#" class="button" v-on:click="deleteMessage(selectedMessage)"><span>Delete</span></a></li>
             </ul>
-          </dd>
-        </dl>
-        <nav class="views">
-          <ul>
-            <li class="format tab" v-for="presentation in presentations" v-bind:class="{ 'selected': isPresentationSelected(presentation) }" v-on:click="selectPresentation(presentation)">
-              <a href="#">{{ presentationDisplayName(presentation) }}</a>
-            </li>
-            <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank"><span>Download</span></a></li>
-            <li class="action delete"><a href="#" class="button" v-on:click="deleteMessage(selectedMessage)"><span>Delete</span></a></li>
-          </ul>
-        </nav>
-      </header>
-      <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()" v-on:load="preparePresentationContent"></iframe>
+          </nav>
+          <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()" v-on:load="preparePresentationContent"></iframe>
+        </div>
     </article>
   </template>
 
