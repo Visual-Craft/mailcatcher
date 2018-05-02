@@ -269,14 +269,19 @@ body > header {
                 background: dimgray;
               }
             }
-
-            > div {
-              padding: 0 5px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
           }
+        }
+      }
+
+      .folder-name-wrapper {
+        display: flex;
+        padding: 0 5px;
+
+        .folder-name {
+          flex-grow: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
     }

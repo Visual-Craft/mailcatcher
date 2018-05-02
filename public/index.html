@@ -43,7 +43,10 @@
             <ul>
               <li v-for="folder in folders" class="noselect" v-bind:class="{ 'selected': selectedOwner === folder.owner }">
                 <span class="folder-line" v-on:click="selectOwner(folder.owner)">
-                    <div><span class="folder-name">{{ folder.name }}</span> [ {{ folder.count.total }} / {{ folder.count.new }} new ]</div>
+                    <div class="folder-name-wrapper">
+                      <span class="folder-name">{{ folder.name }}</span>
+                      <span class="folder-qty">[ {{ folder.count.total }} / {{ folder.count.new }} new ]</span>
+                    </div>
                 </span>
                 <span class="clear-folder" v-if="folder.count.total > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
               </li>
