@@ -42,8 +42,8 @@
           <div class="folders-wrapper">
             <ul>
               <li v-for="folder in folders" class="noselect" v-bind:class="{ 'selected': selectedOwner === folder.owner }">
-                <span class="folder-name" v-on:click="selectOwner(folder.owner)">
-                    <div>{{ folder.name }} ({{ folder.count.total }} total, {{ folder.count.new }} new)</div>
+                <span class="folder-line" v-on:click="selectOwner(folder.owner)">
+                    <div><span class="folder-name">{{ folder.name }}</span> [ {{ folder.count.total }} / {{ folder.count.new }} new ]</div>
                 </span>
                 <span class="clear-folder" v-if="folder.count.total > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
               </li>
@@ -63,9 +63,9 @@
               </thead>
               <tbody>
                   <tr v-for="message in filteredMessages" track-by="id" v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }" v-bind:data-message-id="message.id" v-on:click="selectMessage(message)">
-                    <td v-bind:class="{ 'blank': !message.sender }">{{ message.sender || "No sender" }}</td>
-                    <td v-bind:class="{ 'blank': !message.recipients || !message.recipients.length }">{{ (message.recipients || []).join(", ") || "No receipients" }}</td>
-                    <td v-bind:class="{ 'blank': !message.subject }">{{ message.subject || "No subject" }}</td>
+                    <td v-bind:class="{ 'no-value': !message.sender }">{{ message.sender || "No sender" }}</td>
+                    <td v-bind:class="{ 'no-value': !message.recipients || !message.recipients.length }">{{ (message.recipients || []).join(", ") || "No receipients" }}</td>
+                    <td v-bind:class="{ 'no-value': !message.subject }">{{ message.subject || "No subject" }}</td>
                     <td>{{ message.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</td>
                   </tr>
               </tbody>
@@ -81,19 +81,19 @@
               <ul class="metadata">
                 <li>
                   <div class="metadata-title created_at">Received</div>
-                  <div class="created_at">{{ selectedMessage.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</div>
+                  <div class="metadata-value created_at">{{ selectedMessage.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</div>
                 </li>
                 <li>
                   <div class="metadata-title from">From</div>
-                  <div class="from">{{ selectedMessage.sender || "No sender" }}</div>
+                  <div class="metadata-value from">{{ selectedMessage.sender || "No sender" }}</div>
                 </li>
                 <li>
                   <div class="metadata-title to">To</div>
-                  <div class="to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</div>
+                  <div class="metadata-value to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</div>
                 </li>
                 <li>
                   <div class="metadata-title subject">Subject</div>
-                  <div class="subject">{{ selectedMessage.subject || "No subject" }}</div>
+                  <div class="metadata-value subject" v-bind:class="{ 'no-value': !selectedMessage.subject }">{{ selectedMessage.subject || "No subject" }}</div>
                 </li>
                 <li v-if="hasAttachments(selectedMessage)">
                   <div class="metadata-title attachments">Attachments</div>
