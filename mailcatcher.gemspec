@@ -40,16 +40,8 @@ Gem::Specification.new do |s|
   s.add_dependency 'sinatra-contrib', '~> 1.4.7'
   s.add_dependency 'json', '~> 2.0.2'
 
-
-  s.add_development_dependency "coffee-script"
-  s.add_development_dependency "compass"
   s.add_development_dependency "minitest", "~> 5.0"
   s.add_development_dependency "rake"
   s.add_development_dependency "rdoc"
-  s.add_development_dependency "sass"
   s.add_development_dependency "selenium-webdriver"
-  s.add_development_dependency "sprockets"
-  s.add_development_dependency "sprockets-sass"
-  s.add_development_dependency "sprockets-helpers"
-  s.add_development_dependency "uglifier"
 end

@@ -1,11 +1,3 @@
-#= require jquery
-#= require keymaster
-#= require underscore
-#= require moment
-#= require vue
-#= require jquery.noty.packaged
-#= require js.cookie
-
 class Resizer
   constructor: (resizer, onResize) ->
     @resizer = resizer
