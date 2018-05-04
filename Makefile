@@ -20,10 +20,10 @@ assets: $(ASSETS_CSS) $(ASSETS_JS) $(ASSETS_VENDOR_JS)
 a: assets
 
 
-$(ASSETS_CSS): $(ASSETS_CSS_SRC)
+$(ASSETS_CSS): $(ASSETS_CSS_SRC) $(NODE_MODULES)
 	cd $(DIR) && npx gulp css
 
-$(ASSETS_JS): $(ASSETS_JS_SRC)
+$(ASSETS_JS): $(ASSETS_JS_SRC) $(NODE_MODULES)
 	cd $(DIR) && npx gulp app-js
 
 $(ASSETS_VENDOR_JS): $(NODE_MODULES)
