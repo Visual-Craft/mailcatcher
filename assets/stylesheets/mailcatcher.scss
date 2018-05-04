@@ -1,4 +1,5 @@
-$sidebar-width: 100vw;
+$sidebar-width: 350px;
+$btn-min-height: 28px;
 
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a,
 abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub,
@@ -53,11 +54,6 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
 }
 
 .noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
@@ -73,25 +69,6 @@ body {
   color: black;
   font-size: 12px;
   font-family: Helvetica, sans-serif;
-
-  &.iframe {
-    background: white;
-
-    h1 {
-      font-size: 1.3em;
-      margin: 12px;
-    }
-
-    p, form {
-      margin: 0 12px 12px 12px;
-      line-height: 1.25;
-    }
-
-    .loading {
-      color: #666666;
-      margin-left: 0.5em;
-    }
-  }
 }
 
 .button {
@@ -199,22 +176,15 @@ body {
   width: 100%;
   background: white;
 
-  td {
-    box-sizing: border-box;
-  }
-
   .folders {
     border-right: 1px solid #cccccc;
     border-bottom: 1px solid #cccccc;
-    vertical-align: top;
-    width: $sidebar-width;
-    display: block;
 
     .folders-wrapper {
       width: 99%;
       padding: 7px 0;
       overflow-y: auto;
-      max-height: 30vh;
+      max-height: 33vh;
 
       ul {
         padding: 0;
@@ -251,6 +221,7 @@ body {
 
               .folder-name {
                 font-weight: bold;
+                cursor: pointer;
               }
             }
 
@@ -276,7 +247,7 @@ body {
 
       .folder-name-wrapper {
         display: flex;
-        padding: 0 5px;
+        padding: 0 5px 0 0;
 
         .folder-name {
           flex-grow: 1;
@@ -289,7 +260,7 @@ body {
   }
 
   .emails {
-    width: $sidebar-width;
+    width: 100vw;
     display: block;
     vertical-align: top;
     background: #eeeeee;
@@ -297,7 +268,6 @@ body {
     padding: 15px 5px 15px;
 
     #messages {
-      width: 98%;
       min-height: 2 * (1em + 0.5em);
       overflow: auto;
       max-height: 30vh;
@@ -353,7 +323,7 @@ body {
 }
 
 #resizer {
-  padding-bottom: 5px;
+  padding-bottom: 10px;
   cursor: ns-resize;
 
   .ruler {
@@ -370,14 +340,15 @@ body {
   }
 
   .message-left {
-    width: calc(#{$sidebar-width} - 4vw);
-    float: left;
     overflow: hidden;
+    padding: 0 5px;
+
+    li {
+      margin-bottom: 10px;
+    }
   }
 
   .message-right {
-    width: 100%;
-    float: left;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -385,29 +356,24 @@ body {
   }
 
   .views {
+    padding-top: 10px;
+
     ul {
+      display: flex;
       border-bottom: 1px solid #cccccc;
-
-      li {
-        display: inline-block;
-      }
-
-      &:after {
-        content: '';
-        display: block;
-        width: 100%;
-        clear: both;
-        min-height: 1px;
-      }
+      align-items: flex-end;
     }
 
-    .tab {
-      display: inline-block;
-      vertical-align: middle;
+    li {
+      padding: 0 3px;
+
+      &:first-child {
+        padding-left: 0;
+      }
 
       a {
-        display: inline-block;
-        padding: 5px 3px;
+        display: block;
+        padding: 0 10px;
         border: 1px solid #cccccc;
         background: #dddddd;
         color: #333333;
@@ -417,6 +383,8 @@ body {
         text-decoration: none;
         margin-bottom: -2px;
         border-bottom: 0;
+        min-height: $btn-min-height;
+        line-height: $btn-min-height;
       }
 
       &:not(.selected):hover a {
@@ -433,59 +401,65 @@ body {
     }
 
     .action {
-      float: right;
-      margin-left: 2px;
-      margin-bottom: 8px;
+      a {
+        padding: 0 5px;
+        margin: 6px 0;
+        border-bottom: 1px solid #ccc;
+      }
+
+      &.delete {
+        margin-left: auto;
+      }
     }
-  }
 
-  header {
-    .metadata {
-      overflow: hidden;
-      padding: 5px 10px;
+    header {
+      .metadata {
+        overflow: hidden;
+        padding: 5px;
 
-      li {
-        margin-bottom: 10px;
-      }
+        li {
+          margin-bottom: 10px;
+        }
 
-      .metadata-title {
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #666666;
-      }
+        .metadata-title {
+          font-weight: 700;
+          margin-bottom: 4px;
+          color: #666666;
+        }
 
-      .metadata-value {
-        color: #636363;
-      }
+        .metadata-value {
+          color: #636363;
+        }
 
-      .attachments {
-        ul {
-          li {
-            display: inline-block;
-            vertical-align: middle;
+        .attachments {
+          ul {
+            li {
+              display: inline-block;
+              vertical-align: middle;
+            }
           }
         }
       }
     }
-  }
 
-  .toggle-height {
-    a {
-      display: block;
-      width: 42px;
-      height: 28px;
-      text-shadow: 1px 1px 0 white;
-      background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMjQgOWgtMnYtNGgtNHYtMmg2djZ6bS02IDEydi0yaDR2LTRoMnY2aC02em0tMTgtNmgydjRoNHYyaC02di02em02LTEydjJoLTR2NGgtMnYtNmg2eiIvPjwvc3ZnPg==") center center no-repeat, linear-gradient(#f4f4f4, #ececec), #ececec;
-      background-size: 60%;
+    .toggle-height {
+      a {
+        display: block;
+        width: 42px;
+        height: 30px;
+        text-shadow: 1px 1px 0 white;
+        background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMjQgOWgtMnYtNGgtNHYtMmg2djZ6bS02IDEydi0yaDR2LTRoMnY2aC02em0tMTgtNmgydjRoNHYyaC02di02em02LTEydjJoLTR2NGgtMnYtNmg2eiIvPjwvc3ZnPg==") center center no-repeat, linear-gradient(#f4f4f4, #ececec), #ececec;
+        background-size: 60%;
+        border: 1px solid #ccc;;
 
-      &.expanded {
-        background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTggM2gydjRoNHYyaC02di02em02IDEydjJoLTR2NGgtMnYtNmg2em0tMTggNmgtMnYtNGgtNHYtMmg2djZ6bS02LTEydi0yaDR2LTRoMnY2aC02eiIvPjwvc3ZnPg==") center center no-repeat, linear-gradient(#f4f4f4, #ececec), #ececec;
+        &.expanded {
+          background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTggM2gydjRoNHYyaC02di02em02IDEydjJoLTR2NGgtMnYtNmg2em0tMTggNmgtMnYtNGgtNHYtMmg2djZ6bS02LTEydi0yaDR2LTRoMnY2aC02eiIvPjwvc3ZnPg==") center center no-repeat, linear-gradient(#f4f4f4, #ececec), #ececec;
+        }
       }
     }
-  }
 }
 
-iframe {
+  iframe {
   display: block;
   width: 100%;
   background: white;
@@ -495,26 +469,32 @@ iframe {
   border-top: 0;
 }
 
-[v-cloak] {
+  [v-cloak] {
   display: none;
 }
 
-li.logout {
+  li.logout {
   margin: 4px;
   cursor: pointer;
 }
 
-@media (min-width: 770px) {
-  $sidebar-width: 300px;
+  .no-value {
+    color: #a2a2a2 !important;
+    font-style: italic;
+  }
+}
 
-  body {
+@media (min-width: 770px) {
+  #mc-app {
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
 
   .wrapper {
+    display: flex;
+
     .folders {
-      display: table-cell;
       width: $sidebar-width;
       border-bottom: 0;
 
@@ -543,45 +523,17 @@ li.logout {
 
     .message-left {
       width: $sidebar-width;
+      padding: 0 5px;
     }
 
     .message-right {
       padding-right: 5px;
       width: calc(100% - #{$sidebar-width});
       height: auto;
-
-      .action {
-        float: right;
-      }
-
-      .button {
-        margin: 5px 3px;
-        display: inline-block;
-      }
-    }
-
-    .views {
-      .tab {
-        vertical-align: bottom;
-        margin-bottom: -24px;
-
-        a {
-          padding: 6px;
-        }
-      }
-
-      .action {
-        margin-bottom: 0;
-      }
     }
   }
 
   .button {
     padding: 6px 12px;
   }
-}
-
-.no-value {
-  color: #a2a2a2 !important;
-  font-style: italic;
 }

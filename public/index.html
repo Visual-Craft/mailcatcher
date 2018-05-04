@@ -1,133 +1,166 @@
 <!DOCTYPE html>
 <html class="mailcatcher">
 <head>
-  <title>MailCatcher</title>
-  <link href="favicon.ico" rel="icon" />
-  <link rel="stylesheet" href="assets/mailcatcher.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MailCatcher</title>
+    <link href="favicon.ico" rel="icon"/>
+    <link rel="stylesheet" href="assets/mailcatcher.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-  <div id="mc-app" v-cloak>
-      <div :is="currentComponent"></div>
-  </div>
+<div id="mc-app" v-cloak>
+    <div :is="currentComponent"></div>
+</div>
 
-  <script type="text/x-template" id="mc-login">
+<script type="text/x-template" id="mc-login">
     <header>
-      <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
-      <nav class="app">
-        <form v-on:submit.prevent="loginSubmit">
-          <ul>
-            <li class="login"><input v-model="username" placeholder="login" /></li>
-            <li class="password"><input v-model="password" type="password" /></li>
-            <li><input type="submit" value="Login" /></li>
-          </ul>
-        </form>
-      </nav>
+        <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
+        <nav class="app">
+            <form v-on:submit.prevent="loginSubmit">
+                <ul>
+                    <li class="login"><input v-model="username" placeholder="login"/></li>
+                    <li class="password"><input v-model="password" type="password"/></li>
+                    <li><input type="submit" value="Login"/></li>
+                </ul>
+            </form>
+        </nav>
     </header>
-  </script>
+</script>
 
-  <script type="text/x-template" id="mc-main">
+<script type="text/x-template" id="mc-main">
     <header>
-      <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
-      <nav class="app">
-        <ul>
-          <li class="search"><input type="search" placeholder="Search messages..." incremental="true" v-model="search" /></li>
-          <li class="username" v-if="showLogoutButton() && userName()"><div style="padding: 11px;">{{ userName() }}</div></li>
-          <li class="logout"><div class="button"  v-if="showLogoutButton()" v-on:click="logout()">Logout</div></li>
-        </ul>
-      </nav>
-    </header>
-
-    <table class="wrapper">
-      <tr>
-        <td class="folders">
-          <div class="folders-wrapper">
+        <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
+        <nav class="app">
             <ul>
-              <li v-for="folder in folders" class="noselect" v-bind:class="{ 'selected': selectedOwner === folder.owner }">
-                <span class="folder-line" v-on:click="selectOwner(folder.owner)">
-                    <div class="folder-name-wrapper">
-                      <span class="folder-name" v-bind:title="folder.name">{{ folder.name }}</span>
-                      <span class="folder-qty">[ {{ folder.count.total }} / {{ folder.count.new }} new ]</span>
-                    </div>
-                </span>
-                <span class="clear-folder" v-if="folder.count.total > 0" v-on:click="clearMessages(folder.owner)">Clear</span>
-              </li>
+                <li class="search"><input type="search" placeholder="Search messages..." incremental="true"
+                                          v-model="search"/></li>
+                <li class="username" v-if="showLogoutButton() && userName()">
+                    <div style="padding: 11px;">{{ userName() }}</div>
+                </li>
+                <li class="logout">
+                    <div class="button" v-if="showLogoutButton()" v-on:click="logout()">Logout</div>
+                </li>
             </ul>
-          </div>
-        </td>
-        <td class="emails">
-          <nav id="messages">
-            <table>
-              <thead>
-              <tr>
-                <th>From</th>
-                <th>To</th>
-                <th>Subject</th>
-                <th>Received</th>
-              </tr>
-              </thead>
-              <tbody>
-                  <tr v-for="message in filteredMessages" track-by="id" v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }" v-bind:data-message-id="message.id" v-on:click="selectMessage(message)">
-                    <td v-bind:class="{ 'no-value': !message.sender }">{{ message.sender || "No sender" }}</td>
-                    <td v-bind:class="{ 'no-value': !message.recipients || !message.recipients.length }">{{ (message.recipients || []).join(", ") || "No receipients" }}</td>
-                    <td v-bind:class="{ 'no-value': !message.subject }">{{ message.subject || "No subject" }}</td>
-                    <td>{{ message.created_at | moment "D MMM Y HH:mm:ss" }}</td>
-                  </tr>
-              </tbody>
-            </table>
-          </nav>
-        </td>
-      </tr>
-    </table>
-    <div id="resizer"><div class="ruler"></div></div>
-    <article id="message" v-if="selectedMessage" v-bind:class="{ 'expanded': messageExpanded }">
+        </nav>
+    </header>
+
+    <div class="wrapper">
+        <div class="folders">
+            <div class="folders-wrapper">
+                <ul>
+                    <li v-for="folder in folders" class="noselect"
+                        v-bind:class="{ 'selected': selectedOwner === folder.owner }">
+                        <span class="folder-line" v-on:click="selectOwner(folder.owner)">
+                            <div class="folder-name-wrapper">
+                              <span class="folder-name" v-bind:title="folder.name">{{ folder.name }}</span>
+                              <span class="folder-qty">[ {{ folder.count.total }} / {{ folder.count.new }} new ]</span>
+                            </div>
+                        </span>
+                        <span class="clear-folder" v-if="folder.count.total > 0"
+                              v-on:click="clearMessages(folder.owner)">Clear</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="emails">
+            <div id="messages">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Subject</th>
+                        <th>Received</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="message in filteredMessages" track-by="id"
+                        v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
+                        v-bind:data-message-id="message.id" v-on:click="selectMessage(message)">
+                        <td v-bind:class="{ 'no-value': !message.sender }">{{ message.sender || "No sender" }}</td>
+                        <td v-bind:class="{ 'no-value': !message.recipients || !message.recipients.length }">{{
+                            (message.recipients || []).join(", ") || "No receipients" }}
+                        </td>
+                        <td v-bind:class="{ 'no-value': !message.subject }">{{ message.subject || "No subject" }}</td>
+                        <td>{{ message.created_at | moment "D MMM Y HH:mm:ss" }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="resizer">
+        <div class="ruler"></div>
+    </div>
+
+    <div id="message" v-if="selectedMessage" v-bind:class="{ 'expanded': messageExpanded }">
         <div class="message-left">
-          <header>
-              <ul class="metadata">
-                <li>
-                  <div class="metadata-title created_at">Received</div>
-                  <div class="metadata-value created_at">{{ selectedMessage.created_at | moment "D MMM Y HH:mm:ss" }}</div>
-                </li>
-                <li>
-                  <div class="metadata-title from">From</div>
-                  <div class="metadata-value from">{{ selectedMessage.sender || "No sender" }}</div>
-                </li>
-                <li>
-                  <div class="metadata-title to">To</div>
-                  <div class="metadata-value to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</div>
-                </li>
-                <li>
-                  <div class="metadata-title subject">Subject</div>
-                  <div class="metadata-value subject" v-bind:class="{ 'no-value': !selectedMessage.subject }">{{ selectedMessage.subject || "No subject" }}</div>
-                </li>
-                <li v-if="hasAttachments(selectedMessage)">
-                  <div class="metadata-title attachments">Attachments</div>
-                  <div class="attachments">
-                      <ul>
-                        <li v-for="(id, attachment) in selectedMessage.attachments"><a href="{{ attachmentUrl(selectedMessage, attachment) }}" target="_blank">{{ attachment.filename }}</a></li>
-                      </ul>
-                   </div>
-                </li>
-              </ul>
-          </header>
+            <header>
+                <ul class="metadata">
+                    <li>
+                        <div class="metadata-title created_at">Received</div>
+                        <div class="metadata-value created_at">{{ selectedMessage.created_at | moment "D MMM Y HH:mm:ss"
+                            }}
+                        </div>
+                    </li>
+                    <li>
+                        <div class="metadata-title from">From</div>
+                        <div class="metadata-value from">{{ selectedMessage.sender || "No sender" }}</div>
+                    </li>
+                    <li>
+                        <div class="metadata-title to">To</div>
+                        <div class="metadata-value to">{{ (selectedMessage.recipients || []).join(", ") || "No
+                            receipients" }}
+                        </div>
+                    </li>
+                    <li>
+                        <div class="metadata-title subject">Subject</div>
+                        <div class="metadata-value subject" v-bind:class="{ 'no-value': !selectedMessage.subject }">{{
+                            selectedMessage.subject || "No subject" }}
+                        </div>
+                    </li>
+                    <li v-if="hasAttachments(selectedMessage)">
+                        <div class="metadata-title attachments">Attachments</div>
+                        <div class="attachments">
+                            <ul>
+                                <li v-for="(id, attachment) in selectedMessage.attachments"><a
+                                        href="{{ attachmentUrl(selectedMessage, attachment) }}" target="_blank">{{
+                                    attachment.filename }}</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </header>
         </div>
-        <div class="message-right">
-          <nav class="views">
-            <ul>
-              <li class="format tab" v-for="presentation in presentations" v-bind:class="{ 'selected': isPresentationSelected(presentation) }" v-on:click="selectPresentation(presentation)">
-                <a href="#">{{ presentationDisplayName(presentation) }}</a>
-              </li>
-              <li class="action delete"><a href="#" class="button" v-on:click="deleteMessage(selectedMessage)"><span>Delete</span></a></li>
-              <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank"><span>Download</span></a></li>
-              <li class="action toggle-height"><a href="#" class="button" v-bind:class="{ 'expanded': messageExpanded }" v-on:click="toggleMessageExpanded"></a></li>
-            </ul>
-          </nav>
-          <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()" v-on:load="preparePresentationContent"></iframe>
-        </div>
-    </article>
-  </script>
 
-  <script src="assets/vendor.js"></script>
-  <script src="assets/mailcatcher.js"></script>
+        <div class="message-right">
+            <nav class="views">
+                <ul>
+                    <li class="format tab" v-for="presentation in presentations"
+                        v-bind:class="{ 'selected': isPresentationSelected(presentation) }"
+                        v-on:click="selectPresentation(presentation)">
+                        <a href="#">{{ presentationDisplayName(presentation) }}</a>
+                    </li>
+                    <li class="action delete">
+                        <a href="#" class="button" v-on:click="deleteMessage(selectedMessage)">Delete</a>
+                    </li>
+                    <li class="action download">
+                        <a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank">Download</a>
+                    </li>
+                    <li class="action toggle-height">
+                        <a href="#" class="button"
+                           v-bind:class="{ 'expanded': messageExpanded }" v-on:click="toggleMessageExpanded"></a>
+                    </li>
+                </ul>
+            </nav>
+            <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()"
+                    v-on:load="preparePresentationContent"></iframe>
+        </div>
+    </div>
+</script>
+
+<script src="assets/vendor.js"></script>
+<script src="assets/mailcatcher.js"></script>
 </body>
 </html>
