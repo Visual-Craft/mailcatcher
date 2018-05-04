@@ -78,7 +78,7 @@
       </tr>
     </table>
     <div id="resizer"><div class="ruler"></div></div>
-    <article id="message" v-if="selectedMessage">
+    <article id="message" v-if="selectedMessage" v-bind:class="{ 'expanded': messageExpanded }">
         <div class="message-left">
           <header>
               <ul class="metadata">
@@ -115,9 +115,9 @@
               <li class="format tab" v-for="presentation in presentations" v-bind:class="{ 'selected': isPresentationSelected(presentation) }" v-on:click="selectPresentation(presentation)">
                 <a href="#">{{ presentationDisplayName(presentation) }}</a>
               </li>
-              <li class="action toggle-height"><a href="#" class="button" v-on:click="toggleMessageHeight()"><span>Toggle height</span></a></li>
-              <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank"><span>Download</span></a></li>
               <li class="action delete"><a href="#" class="button" v-on:click="deleteMessage(selectedMessage)"><span>Delete</span></a></li>
+              <li class="action download"><a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank"><span>Download</span></a></li>
+              <li class="action toggle-height"><a href="#" class="button" v-bind:class="{ 'expanded': messageExpanded }" v-on:click="toggleMessageExpanded"></a></li>
             </ul>
           </nav>
           <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()" v-on:load="preparePresentationContent"></iframe>

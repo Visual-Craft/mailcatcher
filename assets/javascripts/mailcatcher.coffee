@@ -145,6 +145,7 @@ jQuery(() ->
           selectedMessage: null
           selectedPresentation: null
           resizer: null
+          messageExpanded: null
 
         watch:
           'messages': (messages, oldMessages) ->
@@ -177,8 +178,17 @@ jQuery(() ->
                     message.new = 0
 
               this.selectedPresentation = this.presentations[0]
+              this.messageExpanded = false
             else
               this.selectedPresentation = null
+              this.messageExpanded = null
+
+          'messageExpanded': (value) ->
+            if value == null
+              return
+
+            $(".folders-wrapper")[if value then 'slideUp' else 'slideDown'](300)
+            $("#messages")[if value then 'slideUp' else 'slideDown'](300)
 
         methods:
           wrapAjax: (options) ->
@@ -392,10 +402,8 @@ jQuery(() ->
             if this.selectedPresentation && this.selectedPresentation.contentType == 'text/html'
               $(event.target).contents().find('a').attr('target','_blank')
 
-          toggleMessageHeight: () ->
-            $(".folders-wrapper").slideToggle(300)
-            $("#messages").slideToggle(300)
-            $("#message").toggleClass('is-full-height')
+          toggleMessageExpanded: () ->
+            this.messageExpanded = !this.messageExpanded
 
         computed:
           folders: () ->

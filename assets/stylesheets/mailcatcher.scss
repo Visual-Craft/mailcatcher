@@ -364,7 +364,7 @@ body > header {
 #message {
   padding: 10px 0;
 
-  &.is-full-height {
+  &.expanded {
     height: 94vh;
   }
 
@@ -464,6 +464,21 @@ body > header {
             vertical-align: middle;
           }
         }
+      }
+    }
+  }
+
+  .toggle-height {
+    a {
+      display: block;
+      width: 42px;
+      height: 28px;
+      text-shadow: 1px 1px 0 white;
+      background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMjQgOWgtMnYtNGgtNHYtMmg2djZ6bS02IDEydi0yaDR2LTRoMnY2aC02em0tMTgtNmgydjRoNHYyaC02di02em02LTEydjJoLTR2NGgtMnYtNmg2eiIvPjwvc3ZnPg==") center center no-repeat, linear-gradient(#f4f4f4, #ececec), #ececec;
+      background-size: 60%;
+
+      &.expanded {
+        background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTggM2gydjRoNHYyaC02di02em02IDEydjJoLTR2NGgtMnYtNmg2em0tMTggNmgtMnYtNGgtNHYtMmg2djZ6bS02LTEydi0yaDR2LTRoMnY2aC02eiIvPjwvc3ZnPg==") center center no-repeat, linear-gradient(#f4f4f4, #ececec), #ececec;
       }
     }
   }
