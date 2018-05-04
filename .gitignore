@@ -13,3 +13,4 @@
 *.gem
 
 /vendor/
+/.ruby-version
