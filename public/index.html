@@ -69,7 +69,7 @@
                     <td v-bind:class="{ 'no-value': !message.sender }">{{ message.sender || "No sender" }}</td>
                     <td v-bind:class="{ 'no-value': !message.recipients || !message.recipients.length }">{{ (message.recipients || []).join(", ") || "No receipients" }}</td>
                     <td v-bind:class="{ 'no-value': !message.subject }">{{ message.subject || "No subject" }}</td>
-                    <td>{{ message.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</td>
+                    <td>{{ message.created_at | moment "D MMM Y HH:mm:ss" }}</td>
                   </tr>
               </tbody>
             </table>
@@ -84,7 +84,7 @@
               <ul class="metadata">
                 <li>
                   <div class="metadata-title created_at">Received</div>
-                  <div class="metadata-value created_at">{{ selectedMessage.created_at | moment "dddd, D MMM Y HH:mm:ss" }}</div>
+                  <div class="metadata-value created_at">{{ selectedMessage.created_at | moment "D MMM Y HH:mm:ss" }}</div>
                 </li>
                 <li>
                   <div class="metadata-title from">From</div>
