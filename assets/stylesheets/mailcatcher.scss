@@ -124,6 +124,7 @@ body {
 body > header {
   overflow: hidden;
   border-bottom: 1px solid #cccccc;
+  flex-shrink: 0;
 
   h1 {
     float: left;
