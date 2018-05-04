@@ -137,19 +137,18 @@
             <nav class="views">
                 <ul>
                     <li class="format tab" v-for="presentation in presentations"
-                        v-bind:class="{ 'selected': isPresentationSelected(presentation) }"
-                        v-on:click="selectPresentation(presentation)">
-                        <a href="#">{{ presentationDisplayName(presentation) }}</a>
+                        v-bind:class="{ 'selected': isPresentationSelected(presentation) }">
+                        <a href="#" v-on:click.prevent="selectPresentation(presentation)">{{ presentationDisplayName(presentation) }}</a>
                     </li>
                     <li class="action delete">
-                        <a href="#" class="button" v-on:click="deleteMessage(selectedMessage)">Delete</a>
+                        <a href="#" class="button" v-on:click.prevent="deleteMessage(selectedMessage)">Delete</a>
                     </li>
                     <li class="action download">
                         <a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank">Download</a>
                     </li>
                     <li class="action toggle-height">
                         <a href="#" class="button"
-                           v-bind:class="{ 'expanded': messageExpanded }" v-on:click="toggleMessageExpanded"></a>
+                           v-bind:class="{ 'expanded': messageExpanded }" v-on:click.prevent="toggleMessageExpanded"></a>
                     </li>
                 </ul>
             </nav>
