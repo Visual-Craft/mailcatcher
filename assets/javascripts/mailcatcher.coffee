@@ -26,7 +26,9 @@ class Resizer
   resizeToSaved: ->
     height = parseInt(window.localStorage?.getItem(@resizeToSavedKey))
 
-    unless isNaN(height)
+    if isNaN(height)
+      @resizeTo(200)
+    else
       @resizeTo(height)
 
 Vue.filter('moment', (value, format) ->
@@ -133,7 +135,7 @@ jQuery(() ->
             false
 
           this.resizer = new Resizer($("#resizer"), (height) =>
-            blockHeight = Math.max(height, 60) - $(".wrapper").offset().top
+            blockHeight = Math.max(height, 60) - $(".wrapper").offset().top / 2
             $(".folders-wrapper").css(height: blockHeight)
             $("#messages").css(height: blockHeight + 4)
           )
