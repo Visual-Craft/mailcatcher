@@ -78,8 +78,8 @@
                         v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
                         v-bind:data-message-id="message.id" v-on:click="selectMessage(message)">
                         <td v-bind:class="{ 'no-value': !message.sender }">{{ message.sender || "No sender" }}</td>
-                        <td v-bind:class="{ 'no-value': !message.recipients || !message.recipients.length }">{{
-                            (message.recipients || []).join(", ") || "No receipients" }}
+                        <td v-bind:class="{ 'no-value': !message.recipients || !message.recipients.length }">
+                            {{ (message.recipients || []).join(", ") || "No receipients" }}
                         </td>
                         <td v-bind:class="{ 'no-value': !message.subject }">{{ message.subject || "No subject" }}</td>
                         <td>{{ message.created_at | moment "D MMM Y HH:mm:ss" }}</td>
@@ -110,8 +110,7 @@
                     </li>
                     <li>
                         <div class="metadata-title to">To</div>
-                        <div class="metadata-value to">{{ (selectedMessage.recipients || []).join(", ") || "No
-                            receipients" }}
+                        <div class="metadata-value to">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}
                         </div>
                     </li>
                     <li>
