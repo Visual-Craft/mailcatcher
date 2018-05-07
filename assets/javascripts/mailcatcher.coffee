@@ -21,12 +21,19 @@ class Resizer
 
   resizeTo: (height) ->
     @onResize(height)
-    window.localStorage?.setItem(@resizeToSavedKey, height)
+    try
+      window.localStorage?.setItem(@resizeToSavedKey, height)
+    catch
 
   resizeToSaved: ->
-    height = parseInt(window.localStorage?.getItem(@resizeToSavedKey))
+    height = 0
 
-    if isNaN(height)
+    try
+      height = parseInt(window.localStorage?.getItem(@resizeToSavedKey))
+    catch
+      height = -1
+
+    if isNaN(height) || height < 0
       @resizeTo(200)
     else
       @resizeTo(height)
