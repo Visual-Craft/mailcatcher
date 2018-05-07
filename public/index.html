@@ -140,15 +140,15 @@
                         v-bind:class="{ 'selected': isPresentationSelected(presentation) }">
                         <a href="#" v-on:click.prevent="selectPresentation(presentation)">{{ presentationDisplayName(presentation) }}</a>
                     </li>
-                    <li class="action delete">
-                        <a href="#" class="button" v-on:click.prevent="deleteMessage(selectedMessage)">Delete</a>
+                    <li class="action toggle-height">
+                        <a href="#" class="button"
+                           v-bind:class="{ 'expanded': messageExpanded }" v-on:click.prevent="toggleMessageExpanded"></a>
                     </li>
                     <li class="action download">
                         <a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank">Download</a>
                     </li>
-                    <li class="action toggle-height">
-                        <a href="#" class="button"
-                           v-bind:class="{ 'expanded': messageExpanded }" v-on:click.prevent="toggleMessageExpanded"></a>
+                    <li class="action delete">
+                        <a href="#" class="button" v-on:click.prevent="deleteMessage(selectedMessage)">Delete</a>
                     </li>
                 </ul>
             </nav>
