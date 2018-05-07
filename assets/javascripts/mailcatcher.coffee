@@ -33,7 +33,7 @@ class Resizer
     catch
       height = -1
 
-    if isNaN(height) || height < 0
+    if isNaN(height) || height <= 0
       @resizeTo(200)
     else
       @resizeTo(height)
