@@ -27,6 +27,7 @@
 </script>
 
 <script type="text/x-template" id="mc-main">
+    <div>
     <header>
         <h1><a href="http://mailcatcher.me" target="_blank">MailCatcher</a></h1>
         <nav class="app">
@@ -157,6 +158,7 @@
             <iframe class="body" v-if="selectedPresentation" v-bind:src="selectedPresentationUrl()"
                     v-on:load="preparePresentationContent"></iframe>
         </div>
+    </div>
     </div>
 </script>
 

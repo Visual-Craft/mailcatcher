@@ -70,11 +70,11 @@ jQuery(() ->
     methods:
       toLogin: () ->
         this.currentUserName = null
-        this.currentComponent = 'login'
+        this.currentComponent = 'mc-login'
 
       toMain: (username = null) ->
         this.currentUserName = username
-        this.currentComponent = 'main'
+        this.currentComponent = 'mc-main'
 
       checkAuth: () ->
         $.ajax
@@ -91,7 +91,7 @@ jQuery(() ->
         this.toLogin()
 
     components:
-      login:
+      'mc-login':
         template: '#mc-login'
 
         data: () ->
@@ -122,7 +122,7 @@ jQuery(() ->
                   timeout: 5000
                 })
 
-      main:
+      'mc-main':
         template: '#mc-main'
 
         created: () ->
