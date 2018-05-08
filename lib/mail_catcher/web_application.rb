@@ -7,7 +7,7 @@ require 'json'
 require 'mail_catcher/events'
 require 'mail_catcher/mail'
 require 'jwt'
-require "sinatra/cookies"
+require 'sinatra/cookies'
 
 class Sinatra::Request
   include Skinny::Helpers
@@ -77,16 +77,6 @@ module MailCatcher
               authorize!
             end
 
-            post '/api/login' do
-              user = MailCatcher.users.find(params[:login])
-
-              if user && user.password == params[:pass]
-                content_type 'text/plain'
-                generate_token(user.name)
-              else
-                error(401, 'Unauthorized')
-              end
-            end
           end
         end
       end
@@ -96,6 +86,17 @@ module MailCatcher
 
     get '/' do
       send_file(File.expand_path('index.html', settings.public_folder))
+    end
+
+    post '/api/login' do
+      user = MailCatcher.users.find(params[:login])
+
+      if user && user.password == params[:pass]
+        content_type 'text/plain'
+        generate_token(user.name)
+      else
+        error(401, 'Unauthorized')
+      end
     end
 
     get '/api/check-auth' do
