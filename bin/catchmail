@@ -33,6 +33,10 @@ OptionParser.new do |parser|
     options[:from] = from
   end
 
+  parser.on('-s SUBJECT', 'Set the message subject') do |subject|
+    options[:subject] = subject
+  end
+
   parser.on('-u USER', 'Set user for authentication') do |user|
     options[:user] = user
   end
@@ -72,6 +76,7 @@ Mail.defaults do
 end
 
 message = Mail.new
+message.subject = options[:subject] unless options[:subject].to_s.empty?
 message.body = $stdin.read
 message.return_path = options[:from] if options[:from]
 options[:attachments] && options[:attachments].each do |attachment|
