@@ -1,11 +1,3 @@
-#= require jquery
-#= require keymaster
-#= require underscore
-#= require moment
-#= require vue
-#= require jquery.noty.packaged
-#= require js.cookie
-
 class Resizer
   constructor: (resizer, onResize) ->
     @resizer = resizer
@@ -29,12 +21,21 @@ class Resizer
 
   resizeTo: (height) ->
     @onResize(height)
-    window.localStorage?.setItem(@resizeToSavedKey, height)
+    try
+      window.localStorage?.setItem(@resizeToSavedKey, height)
+    catch
 
   resizeToSaved: ->
-    height = parseInt(window.localStorage?.getItem(@resizeToSavedKey))
+    height = 0
 
-    unless isNaN(height)
+    try
+      height = parseInt(window.localStorage?.getItem(@resizeToSavedKey))
+    catch
+      height = -1
+
+    if isNaN(height) || height <= 0
+      @resizeTo(200)
+    else
       @resizeTo(height)
 
 Vue.filter('moment', (value, format) ->
@@ -141,9 +142,9 @@ jQuery(() ->
             false
 
           this.resizer = new Resizer($("#resizer"), (height) =>
-            blockHeight = Math.max(height, 60) - $(".wrapper").offset().top
+            blockHeight = Math.max(height, 60) - $(".wrapper").offset().top / 2
             $(".folders-wrapper").css(height: blockHeight)
-            $("#messages").css(height: blockHeight + 14)
+            $("#messages").css(height: blockHeight + 4)
           )
 
         data: () ->
@@ -153,6 +154,7 @@ jQuery(() ->
           selectedMessage: null
           selectedPresentation: null
           resizer: null
+          messageExpanded: null
 
         watch:
           'messages': (messages, oldMessages) ->
@@ -185,8 +187,17 @@ jQuery(() ->
                     message.new = 0
 
               this.selectedPresentation = this.presentations[0]
+              this.messageExpanded = false
             else
               this.selectedPresentation = null
+              this.messageExpanded = null
+
+          'messageExpanded': (value) ->
+            if value == null
+              return
+
+            $(".folders-wrapper")[if value then 'slideUp' else 'slideDown'](300)
+            $("#messages")[if value then 'slideUp' else 'slideDown'](300)
 
         methods:
           wrapAjax: (options) ->
@@ -399,6 +410,9 @@ jQuery(() ->
           preparePresentationContent: (event) ->
             if this.selectedPresentation && this.selectedPresentation.contentType == 'text/html'
               $(event.target).contents().find('a').attr('target','_blank')
+
+          toggleMessageExpanded: () ->
+            this.messageExpanded = !this.messageExpanded
 
         computed:
           folders: () ->

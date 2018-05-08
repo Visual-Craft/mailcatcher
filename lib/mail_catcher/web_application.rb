@@ -29,43 +29,9 @@ module MailCatcher
 
         configure do
           helpers do
-            def javascript_tag(name)
-              %{<script src="/assets/#{name}.js"></script>}
-            end
-
-            def stylesheet_tag(name)
-              %{<link rel="stylesheet" href="/assets/#{name}.css">}
-            end
-
             def current_user
               nil
             end
-          end
-        end
-
-        configure :development do
-          require 'mail_catcher/web_assets'
-          require 'sprockets-helpers'
-
-          assets_env = MailCatcher::WebAssets
-          assets_prefix = 'assets_dev'
-
-          Sprockets::Helpers.configure do |config|
-            config.environment = assets_env
-            config.prefix      = "/#{assets_prefix}"
-            config.digest      = false
-            config.public_path = public_folder
-            config.debug       = true
-          end
-
-          helpers(Sprockets::Helpers)
-
-          get "/#{assets_prefix}/*" do
-            sub_env = env.clone
-            %w(REQUEST_PATH PATH_INFO REQUEST_URI).each do |k|
-              sub_env[k] = sub_env[k].gsub(/\A\/#{assets_prefix}\//, '/')
-            end
-            assets_env.call(sub_env)
           end
         end
 
@@ -129,7 +95,7 @@ module MailCatcher
     end
 
     get '/' do
-      erb :index
+      send_file(File.expand_path('index.html', settings.public_folder))
     end
 
     get '/api/check-auth' do
