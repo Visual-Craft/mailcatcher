@@ -56,7 +56,7 @@ gulp.task('app-js', function() {
     ;
 });
 
-gulp.task('watch', function() {
+gulp.task('watch', ['css', 'vendor-js', 'app-js'], function() {
     gulp.watch(paths.styles, ['css']);
     gulp.watch(paths.appScripts, ['app-js']);
     gulp.watch(paths.vendorScripts, ['vendor-js']);
