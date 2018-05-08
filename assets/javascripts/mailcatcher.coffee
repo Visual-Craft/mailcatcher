@@ -129,31 +129,33 @@ jQuery(() ->
           this.loadFolders()
           this.subscribe()
 
-        ready: () ->
-          key "up", =>
-            this.selectMessageRelative(-1)
-            false
+        mounted: () ->
+          this.$nextTick(() ->
+            key "up", =>
+              this.selectMessageRelative(-1)
+              false
 
-          key "down", =>
-            this.selectMessageRelative(+1)
-            false
+            key "down", =>
+              this.selectMessageRelative(+1)
+              false
 
-          key "⌘+up, ctrl+up, home", =>
-            this.selectMessageIndex(0)
-            false
+            key "⌘+up, ctrl+up, home", =>
+              this.selectMessageIndex(0)
+              false
 
-          key "⌘+down, ctrl+down, end", =>
-            this.selectMessageIndex(-1)
-            false
+            key "⌘+down, ctrl+down, end", =>
+              this.selectMessageIndex(-1)
+              false
 
-          key "delete", =>
-            this.deleteSelectedMessage()
-            false
+            key "delete", =>
+              this.deleteSelectedMessage()
+              false
 
-          this.resizer = new Resizer($("#resizer"), (height) =>
-            blockHeight = Math.max(height, 60) - $(".wrapper").offset().top / 2
-            $(".folders-wrapper").css(height: blockHeight)
-            $("#messages").css(height: blockHeight + 4)
+            this.resizer = new Resizer($("#resizer"), (height) =>
+              blockHeight = Math.max(height, 60) - $(".wrapper").offset().top / 2
+              $(".folders-wrapper").css(height: blockHeight)
+              $("#messages").css(height: blockHeight + 4)
+            )
           )
 
         data: () ->

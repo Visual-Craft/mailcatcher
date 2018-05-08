@@ -88,7 +88,7 @@
                         <td v-if="message.subject">{{ message.subject }}</td>
                         <td v-else class="no-value">No subject</td>
 
-                        <td>{{ message.created_at | moment "D MMM Y HH:mm:ss" }}</td>
+                        <td>{{ message.created_at | moment("D MMM Y HH:mm:ss") }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -106,7 +106,7 @@
                 <ul class="metadata">
                     <li>
                         <div class="metadata-title">Received</div>
-                        <div class="metadata-value">{{ selectedMessage.created_at | moment "D MMM Y HH:mm:ss" }}</div>
+                        <div class="metadata-value">{{ selectedMessage.created_at | moment("D MMM Y HH:mm:ss") }}</div>
                     </li>
                     <li>
                         <div class="metadata-title">From</div>
@@ -132,7 +132,7 @@
                         <div class="attachments">
                             <ul>
                                 <li v-for="(id, attachment) in selectedMessage.attachments">
-                                    <a href="{{ attachmentUrl(selectedMessage, attachment) }}" target="_blank">{{ attachment.filename }}</a>
+                                    <a v-bind:href="attachmentUrl(selectedMessage, attachment)" target="_blank">{{ attachment.filename }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -153,7 +153,7 @@
                            v-bind:class="{ 'expanded': messageExpanded }" v-on:click.prevent="toggleMessageExpanded"></a>
                     </li>
                     <li class="action download">
-                        <a href="{{ downloadUrl(selectedMessage) }}" class="button" target="_blank">Download</a>
+                        <a v-bind:href="downloadUrl(selectedMessage)" class="button" target="_blank">Download</a>
                     </li>
                     <li class="action delete">
                         <a href="#" class="button" v-on:click.prevent="deleteMessage(selectedMessage)">Delete</a>
