@@ -388,36 +388,6 @@ body {
       }
     }
 
-    header {
-      .metadata {
-        overflow: hidden;
-        padding: 5px;
-
-        li {
-          margin-bottom: 10px;
-        }
-
-        .metadata-title {
-          font-weight: 700;
-          margin-bottom: 4px;
-          color: #666666;
-        }
-
-        .metadata-value {
-          color: #636363;
-        }
-
-        .attachments {
-          ul {
-            li {
-              display: inline-block;
-              vertical-align: middle;
-            }
-          }
-        }
-      }
-    }
-
     .toggle-height {
       a {
         display: block;
@@ -443,6 +413,34 @@ body {
     overflow: auto;
     border: 1px solid #cccccc;
     border-top: 0;
+  }
+
+  .metadata {
+    overflow: hidden;
+    padding: 5px;
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .metadata-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #666666;
+    }
+
+    .metadata-value {
+      color: #636363;
+    }
+
+    .attachments {
+      ul {
+        li {
+          display: inline-block;
+          vertical-align: middle;
+        }
+      }
+    }
   }
 }
 
