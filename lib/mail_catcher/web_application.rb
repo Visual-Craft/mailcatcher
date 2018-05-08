@@ -29,54 +29,55 @@ module MailCatcher
 
         configure do
           helpers do
+            def authorized?
+              if MailCatcher.users.no_auth?
+                true
+              else
+                !current_user.nil?
+              end
+            end
+
+            def authorize!
+              error(403, 'Forbidden') unless authorized?
+            end
+
             def current_user
-              nil
-            end
-          end
-        end
-
-        if MailCatcher.users.no_auth?
-          configure do
-            helpers do
-              def current_user
+              if MailCatcher.users.no_auth?
                 nil
-              end
-            end
-          end
-        else
-          configure do
-            helpers do
-              def authorized?
-                !!current_user
-              end
-
-              def authorize!
-                error(403, 'Forbidden') unless authorized?
-              end
-
-              def current_user
+              else
                 MailCatcher.users.find(token['data']) if token
               end
+            end
 
-              def generate_token(data)
-                JWT.encode({ data: data }, MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm])
+            def generate_token(user)
+              if MailCatcher.users.no_auth?
+                nil
+              else
+                JWT.encode({ data: user.name }, MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm])
+              end
+            end
+
+            def token
+              if MailCatcher.users.no_auth?
+                return nil
               end
 
-              def token
-                JWT.decode(cookies['AUTH'] || params['AUTH'], MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm]).first
+              begin
+                key = MailCatcher.config[:token_storage_key]
+                data = cookies[key] || params[key]
+                JWT.decode(data, MailCatcher.config[:token_secret], MailCatcher.config[:token_algorithm]).first
               rescue
                 nil
               end
             end
+          end
 
-            before do
-              if MailCatcher.users.no_auth? || request.path_info == '/api/check-auth' || request.path_info == '/api/login' || !/\A\/api\//.match(request.path_info)
-                return
-              end
-
-              authorize!
+          before do
+            if %w(/api/check-auth /api/login /).include?(request.path_info)
+              return
             end
 
+            authorize!
           end
         end
       end
@@ -93,7 +94,7 @@ module MailCatcher
 
       if user && user.password == params[:pass]
         content_type 'text/plain'
-        generate_token(user.name)
+        generate_token(user)
       else
         error(401, 'Unauthorized')
       end
@@ -102,9 +103,10 @@ module MailCatcher
     get '/api/check-auth' do
       content_type(:json)
       JSON.generate({
-        :status => MailCatcher.users.no_auth? || authorized?,
+        :status => authorized?,
         :no_auth => MailCatcher.users.no_auth?,
         :username => current_user.try(:name),
+        :token_storage_key => MailCatcher.config[:token_storage_key],
       })
     end
 

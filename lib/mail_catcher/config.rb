@@ -22,6 +22,7 @@ module MailCatcher
         :token_algorithm => nil,
         :token_secret => nil,
         :users => nil,
+        :token_storage_key => 'mc-token',
       }
       merge!(defaults.merge(opts))
     end

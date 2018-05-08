@@ -19,7 +19,7 @@
                 <ul>
                     <li class="login"><input v-model="username" placeholder="login"/></li>
                     <li class="password"><input v-model="password" type="password"/></li>
-                    <li><input type="submit" value="Login"/></li>
+                    <li><input v-bind:disabled="!dataFilled()" type="submit" value="Login"/></li>
                 </ul>
             </form>
         </nav>

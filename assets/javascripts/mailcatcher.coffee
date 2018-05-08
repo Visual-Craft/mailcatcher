@@ -52,8 +52,10 @@ jQuery(() ->
     created: () ->
       this.checkAuth()
         .done((data) =>
-          if data && data.status
-            this.noAuth = data.no_auth
+          this.tokenStorageKey = data.token_storage_key
+          this.noAuth = data.no_auth
+
+          if data.status
             this.toMain(data.username)
           else
             this.toLogin()
@@ -69,6 +71,7 @@ jQuery(() ->
       currentComponent: null
       currentUserName: null
       noAuth: false
+      tokenStorageKey: null
 
     methods:
       toLogin: () ->
@@ -79,25 +82,36 @@ jQuery(() ->
         this.currentUserName = username
         this.currentComponent = 'main'
 
-      authToken: () ->
-        Cookies.get('AUTH')
-
       checkAuth: () ->
         $.ajax
           url: "/api/check-auth"
           dataType: 'json'
           type: "GET"
 
+      authenticate: (username, token) ->
+        Cookies.set(this.tokenStorageKey, token)
+        this.toMain(username)
+
+      deAuthenticate: () ->
+        Cookies.set(this.tokenStorageKey, null)
+        this.toLogin()
+
     components:
       login:
         template: '#mc-login'
 
         data: () ->
-          username: null
-          password: null
+          username: ''
+          password: ''
 
         methods:
+          dataFilled: () ->
+            this.username != '' and this.password != ''
+
           loginSubmit: () ->
+            if !this.dataFilled()
+              return
+
             $.ajax
               url: "/api/login"
               data:
@@ -105,8 +119,7 @@ jQuery(() ->
                 pass: this.password
               type: "POST"
               success: (token) =>
-                Cookies.set('AUTH', token)
-                this.$parent.toMain(this.username)
+                this.$parent.authenticate(this.username, token)
               error: () ->
                 noty({
                   text: "Invalid login or password"
@@ -398,8 +411,7 @@ jQuery(() ->
             "/api/messages/#{message.id}/attachment/#{attachment.id}/body"
 
           logout: () ->
-            Cookies.set('AUTH', null)
-            this.$parent.toLogin()
+            this.$parent.deAuthenticate()
 
           showLogoutButton: () ->
             !this.$parent.noAuth
