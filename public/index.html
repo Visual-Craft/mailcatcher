@@ -47,16 +47,15 @@
         <div class="folders">
             <div class="folders-wrapper">
                 <ul>
-                    <li v-for="folder in folders" class="noselect"
-                        v-bind:class="{ 'selected': selectedOwner === folder.owner }">
-                        <span class="folder-line" v-on:click="selectOwner(folder.owner)">
+                    <li v-for="folder in folders" track-by="id" class="noselect"
+                        v-bind:class="{ 'selected': isFolderSelected(folder) }">
+                        <span class="folder-line" v-on:click="toggleSelectedFolder(folder)">
                             <div class="folder-name-wrapper">
                               <span class="folder-name" v-bind:title="folder.name">{{ folder.name }}</span>
-                              <span class="folder-qty">[ {{ folder.count.total }} / {{ folder.count.new }} new ]</span>
+                              <span class="folder-qty">[ {{ folder.count }} / {{ folder.new }} new ]</span>
                             </div>
                         </span>
-                        <span class="clear-folder" v-if="folder.count.total > 0"
-                              v-on:click="clearMessages(folder.owner)">Clear</span>
+                        <span class="clear-folder" v-on:click="clearMessages(folder)">Clear</span>
                     </li>
                 </ul>
             </div>
@@ -76,7 +75,7 @@
                     <tbody>
                     <tr v-for="message in filteredMessages" track-by="id"
                         v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
-                        v-bind:data-message-id="message.id" v-on:click="selectMessage(message)">
+                        v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)">
 
                         <td v-if="message.sender">{{ message.sender }}</td>
                         <td v-else class="no-value">No sender</td>

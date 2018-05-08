@@ -111,8 +111,8 @@ module MailCatcher
     end
 
     get '/api/messages' do
+      messages = Mail.messages(params[:folder], current_user).map { |message| message.to_short_hash }
       content_type(:json)
-      messages = Mail.messages(current_user).map { |message| message.to_short_hash }
       JSON.generate(messages)
     end
 
@@ -121,7 +121,7 @@ module MailCatcher
         request.websocket!(
           :on_start => proc do |websocket|
             subscription = Events::MessageAdded.subscribe do |message|
-              websocket.send_message(JSON.generate(message.to_short_hash)) if MailCatcher.users.no_auth? || MailCatcher.users.allowed_owner?(current_user, message.to_h[:owner])
+              websocket.send_message(JSON.generate(message.to_short_hash)) if MailCatcher.users.no_auth? || MailCatcher.users.allowed_folder?(current_user, message.to_h[:folder])
             end
 
             # send ping responses to correctly work with forward proxies
@@ -143,12 +143,12 @@ module MailCatcher
     end
 
     delete '/api/messages' do
-      owner = params[:owner]
+      folder = params[:folder]
 
-      if owner.nil?
+      if folder.nil?
         Mail.delete!(current_user)
       else
-        Mail.delete_by_owner!(owner, current_user)
+        Mail.delete_by_folder!(folder, current_user)
       end
 
       status 204
@@ -156,7 +156,6 @@ module MailCatcher
 
     get '/api/messages/:id' do
       message = Mail.message(params[:id], current_user)
-
       content_type(:json)
       JSON.generate(message.to_short_hash)
     end
@@ -203,6 +202,11 @@ module MailCatcher
 
     delete '/api/messages/:id' do
       Mail.delete_message!(params[:id], current_user)
+    end
+
+    get '/api/folders' do
+      content_type(:json)
+      JSON.generate(Mail.folders(current_user))
     end
 
     not_found do

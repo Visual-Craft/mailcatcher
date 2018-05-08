@@ -2,20 +2,15 @@ require 'mail_catcher/user'
 
 module MailCatcher
   class Users
-    attr_reader :assigned_owners
-
-    def no_auth?
-      @no_auth
-    end
-
     def initialize(config)
       @users = []
+      @assigned_folders = []
       @no_auth = config.nil?
 
       return if @no_auth
 
       names = {}
-      assigned_owners = []
+      assigned_folders = []
 
       unless config.is_a?(Array) && !config.empty?
         raise 'Invalid users configuration, it should be array of users and have at least one element'
@@ -29,34 +24,32 @@ module MailCatcher
         raise "Missing password for user '#{name}' at index \##{index}" if password.empty?
         names[name] = true
 
-        if item[:owners].nil?
-          raise "Invalid owners for user '#{name}' at index \##{index}, it should be array"
+        if item[:folders].nil?
+          raise "Invalid folders for user '#{name}' at index \##{index}, it should be array"
         end
 
-        if item[:owners].is_a?(Array)
-          owners = item[:owners]
+        if item[:folders].is_a?(Array)
+          folders = item[:folders]
         else
-          owners = [item[:owners]]
+          folders = [item[:folders]]
         end
 
-        owners = owners.map(&:to_s).uniq
-        all_owners = owners.include?('!all')
-        unassigned_owners = owners.include?('!unassigned')
-        owners = owners.reject { |a| ['!all', '!unassigned'].include?(a) }
-        assigned_owners << owners
+        folders = folders.map(&:to_s).uniq
+        all_folders = folders.include?('!all')
+        unassigned_folders = folders.include?('!unassigned')
+        folders = folders.reject { |a| ['!all', '!unassigned'].include?(a) }
+        assigned_folders << folders
 
         @users << User.new.tap do |user|
           user.name = name
           user.password = password
-          user.owners = owners
-          user.all_owners = all_owners
-          user.unassigned_owners = unassigned_owners
+          user.folders = folders
+          user.all_folders = all_folders
+          user.unassigned_folders = unassigned_folders
         end
       end
 
-      @assigned_owners = assigned_owners.flatten.uniq
-
-      @users
+      @assigned_folders = assigned_folders.flatten.uniq
     end
 
     def find(name)
@@ -67,8 +60,20 @@ module MailCatcher
       @users
     end
 
-    def allowed_owner?(user, owner)
-      user && (user.all_owners || (user.unassigned_owners && !assigned_owners.include?(owner)) || user.owners.include?(owner))
+    def no_auth?
+      @no_auth
+    end
+
+    def assigned_folders
+      @assigned_folders
+    end
+
+    def allowed_folder?(user, folder)
+      if no_auth?
+        return true
+      end
+
+      !user.nil? && (user.all_folders || (user.unassigned_folders && !assigned_folders.include?(folder)) || user.folders.include?(folder))
     end
   end
 end

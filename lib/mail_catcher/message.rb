@@ -55,7 +55,7 @@ module MailCatcher
     end
 
     define_field :id
-    define_field :owner
+    define_field :folder
     define_field :sender
     define_field :recipients
     define_field :subject
@@ -70,7 +70,7 @@ module MailCatcher
       def from_raw(data)
         mail = ::Mail.new(data[:source])
         processed_data = {
-          owner: data[:owner],
+          folder: data[:folder],
           sender: data[:sender],
           recipients: data[:recipients],
           subject: mail.subject,

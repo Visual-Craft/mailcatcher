@@ -42,12 +42,13 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   end
 
   def receive_plain_auth(user, password)
-    @owner = user.to_s.strip
+    @folder = user.to_s.strip
+    @folder = 'default' if @folder.empty?
     MailCatcher.config[:password].nil? || MailCatcher.config[:password] === password
   end
 
   def receive_message
-    current_message[:owner] = @owner
+    current_message[:folder] = @folder
     MailCatcher::Mail.add_message current_message
     puts "==> SMTP: Received message from '#{current_message[:sender]}' (#{current_message[:source].length} bytes)"
     true
@@ -111,6 +112,6 @@ class MailCatcher::Smtp < EventMachine::Protocols::SmtpServer
   end
 
   def receive_transaction
-    @owner = nil
+    @folder = nil
   end
 end

@@ -1,11 +1,11 @@
 module MailCatcher
   class User
-    attr_accessor :name, :password, :owners, :all_owners, :unassigned_owners
+    attr_accessor :name, :password, :folders, :all_folders, :unassigned_folders
 
     def initialize
-      @all_owners = false
-      @unassigned_owners = false
-      @owners = []
+      @all_folders = false
+      @unassigned_folders = false
+      @folders = []
     end
   end
 end

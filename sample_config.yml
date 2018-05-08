@@ -15,16 +15,16 @@ users:
   -
     name: 'test1'
     password: '123'
-    owners: '!all' # allowed all messages
+    folders: '!all' # allowed all messages
   -
     name: 'test2'
     password: '123'
-    owners: [] # disallow all messages
+    folders: [] # disallow all messages
   -
     name: 'test3'
     password: '123'
-    owners: ['foo', ''] # allowed 'foo' owner and messages with no owner
+    folders: ['foo'] # allowed messages inside 'foo' folder
   -
     name: 'test4'
     password: '123'
-    owners: ['!unassigned', 'boo'] # allowed all messages without 'foo' and no owner and with 'boo' owner
+    folders: ['!unassigned', 'boo'] # allowed unassigned messages plus messages inside 'boo' folder

@@ -126,7 +126,7 @@ jQuery(() ->
         template: '#mc-main'
 
         created: () ->
-          this.loadMessages()
+          this.loadFolders()
           this.subscribe()
 
         ready: () ->
@@ -157,19 +157,28 @@ jQuery(() ->
           )
 
         data: () ->
+          folders: []
+          selectedFolderId: null
           messages : []
-          selectedOwner: null
+          selectedMessageId: null
           search: ''
-          selectedMessage: null
           selectedPresentation: null
           resizer: null
           messageExpanded: null
 
         watch:
+          'selectedFolderId': (value) ->
+            if value != null and this.findFolderById(value) == null
+              this.selectedFolderId = null
+
+            this.messages = []
+            this.selectedMessageId = null
+            this.loadMessages()
+
           'messages': (messages, oldMessages) ->
-            if this.selectedMessage != null
+            if this.selectedMessageId != null
               if messages.length == 0
-                this.selectedMessage = null
+                this.selectedMessageId = null
               else
                 messages = _.filter(messages, this.filterMessage)
                 selectedId = this.selectedMessage.id
@@ -180,19 +189,30 @@ jQuery(() ->
                   index = Math.min(_.findIndex(oldMessages, findById), messages.length - 1)
 
                   if index >= 0
-                    this.selectedMessage = messages[index]
+                    this.selectedMessageId = messages[index].id
                   else
-                    this.selectedMessage = null
+                    this.selectedMessageId = null
 
-          'selectedMessage': (message) ->
-            if message
+                if this.selectedMessage != null
+                  this.scrollToRow(this.selectedMessage)
+
+          'selectedMessageId': (value) ->
+            message = null
+
+            if value != null
+              message = this.findMessageById(value)
+
+              if message == null
+                this.selectedMessageId = null
+
+            if message != null
               this.scrollToRow(message)
 
               if message.new
                 this.wrapAjax
                   url: "/api/messages/#{message.id}/mark-readed"
                   type: "POST"
-                  success: (data) =>
+                  success: ->
                     message.new = 0
 
               this.selectedPresentation = this.presentations[0]
@@ -243,8 +263,10 @@ jQuery(() ->
 
                 # handle ping, which just returns empty object
                 if not _.isEmpty(message)
-                  this.messages.unshift(message)
+                  if this.acceptedMessageFolderId(message.folder)
+                    this.messages.unshift(message)
 
+                  this.loadFolders()
             else
               return if this.refreshInterval?
 
@@ -253,18 +275,38 @@ jQuery(() ->
               , 2000)
 
           loadMessages: () ->
+            if this.selectedFolder == null
+              return
+
+            requestData = {}
+
+            if !this.selectedFolder.all
+              requestData['folder'] = this.selectedFolder.id
+
             this.wrapAjax
               url: "/api/messages"
               type: "GET"
               dataType: 'json'
-              success: (messages) =>
-                this.messages = messages
+              data: requestData
+              success: (data) =>
+                this.messages = data
 
-          selectMessage: (message) ->
-            this.selectedMessage = message
+          loadFolders: () ->
+            this.wrapAjax
+              url: "/api/folders"
+              type: "GET"
+              dataType: 'json'
+              success: (data) =>
+                this.folders = data
+
+          toggleSelectedMessage: (message) ->
+            if this.isMessageSelected(message)
+              this.selectedMessageId = null
+            else
+              this.selectedMessageId = message.id
 
           selectMessageRelative: (offset) ->
-            unless this.selectedMessage
+            if this.selectedMessage == null
               return
 
             index = _.findIndex(this.messages, (v) => this.selectedMessage.id == v.id) + offset
@@ -279,38 +321,42 @@ jQuery(() ->
               index = this.messages.length + index
               return if index < 0
 
-            this.selectedMessage = this.messages[index]
+            this.selectedMessageId = this.messages[index].id
 
-          selectOwner: (owner) ->
-            this.selectedOwner = owner
-            this.selectedMessage = null
+          isFolderSelected: (folder) ->
+            this.selectedFolder != null and this.selectedFolder.id == folder.id
 
-          clearMessages: (owner) ->
-            if owner == null
-              message = 'all messages'
-            else if owner == ''
-              message = 'messages without owner'
+          acceptedMessageFolderId: (id) ->
+            this.selectedFolder != null and (this.selectedFolder.all or this.selectedFolder.id == id)
+
+          toggleSelectedFolder: (folder) ->
+            if this.isFolderSelected(folder)
+              this.selectedFolderId = null
             else
-              message = "messages with owner '#{owner}'"
+              this.selectedFolderId = folder.id
+
+          clearMessages: (folder) ->
+            if folder.all == null
+              message = 'all messages'
+            else
+              message = "messages in folder '#{folder.name}'"
 
             if confirm("Are you sure you want to clear #{message}?")
-              if owner == null
-                params = ''
-              else
-                params = '?' + $.param({"owner": owner})
+              requestData = {}
+
+              if !folder.all
+                requestData['folder'] = folder.name
 
               this.wrapAjax
-                url: "/api/messages#{params}"
+                url: "/api/messages"
                 type: "DELETE"
+                data: requestData
                 success: =>
                   this.loadMessages()
                 error: ->
                   alert "Error while clearing messages."
 
           filterMessage: (message) ->
-            if this.selectedOwner != null and message.owner != this.selectedOwner
-              return false
-
             search = $.trim(this.search)
 
             if search == ''
@@ -346,7 +392,7 @@ jQuery(() ->
                 else 'Other'
 
           isMessageSelected: (message) ->
-            this.selectedMessage and this.selectedMessage.id == message.id
+            this.selectedMessage != null and this.selectedMessage.id == message.id
 
           deleteMessage: (message) ->
             if not confirm("Are you sure?")
@@ -361,7 +407,7 @@ jQuery(() ->
                 alert "Error while removing message."
 
           deleteSelectedMessage: () ->
-            this.deleteMessage(this.selectedMessage) if this.selectedMessage
+            this.deleteMessage(this.selectedMessage) if this.selectedMessage != null
 
           scrollToRow: (message) ->
             row = $("[data-message-id='#{message.id}']")
@@ -421,57 +467,23 @@ jQuery(() ->
           toggleMessageExpanded: () ->
             this.messageExpanded = !this.messageExpanded
 
+          findFolderById: (id) ->
+            for item in this.folders
+              if id == item.id
+                return item
+
+            return null
+
+          findMessageById: (id) ->
+            for item in this.messages
+              if id == item.id
+                return item
+
+            return null
+
         computed:
-          folders: () ->
-            result = []
-            owners = {}
-            totalNew = 0
-            addFolder = (name, owner, count) -> result.push({ name: name, owner: owner, count: count })
-
-            for k,v of this.messages
-              if owners[v.owner]
-                owners[v.owner]['total']++
-              else
-                owners[v.owner] = {
-                  'total': 1
-                  'new': 0
-                }
-              if v.new
-                totalNew++
-                owners[v.owner]['new']++
-
-            addFolder('! All', null, {
-              'total': this.messages.length
-              'new': totalNew
-            })
-
-            unless this.messages.length
-              return result
-
-            for k,v of owners
-              addFolder(k || '! No owner', k, v)
-
-            ownersNames = _.keys(owners).sort()
-            ownersPriority = {}
-
-            for v,index in ownersNames
-              ownersPriority[v] = index
-
-            result.sort((a, b) ->
-              if a.owner == null
-                -1
-              else if a.owner == ''
-                -1
-              else if a.owner == b.owner
-                0
-              else if ownersPriority[a.owner] < ownersPriority[b.owner]
-                -1
-              else
-                1
-            )
-
           presentations: () ->
-            unless this.selectedMessage
+            if this.selectedMessage == null
               return null
 
             result = []
@@ -500,5 +512,17 @@ jQuery(() ->
 
           filteredMessages: () ->
             _.filter(this.messages, this.filterMessage)
+
+          selectedFolder: () ->
+            if this.selectedFolderId != null
+              this.findFolderById(this.selectedFolderId)
+            else
+              null
+
+          selectedMessage: () ->
+            if this.selectedMessageId != null
+              this.findMessageById(this.selectedMessageId)
+            else
+              null
   )
 )
