@@ -245,11 +245,6 @@ jQuery(() ->
                 if not _.isEmpty(message)
                   this.messages.unshift(message)
 
-              $(window).bind('beforeunload', () =>
-                if this.websocket
-                  this.websocket.close()
-                  this.websocket = null
-              )
             else
               return if this.refreshInterval?
 
