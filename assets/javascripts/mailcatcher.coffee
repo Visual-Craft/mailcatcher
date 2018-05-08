@@ -59,12 +59,6 @@ jQuery(() ->
             this.toMain(data.username)
           else
             this.toLogin()
-            noty({
-              text: "Please login"
-              type: 'information'
-              layout: 'bottomRight'
-              timeout: 3000
-            })
         )
 
     data:
@@ -124,6 +118,8 @@ jQuery(() ->
                 noty({
                   text: "Invalid login or password"
                   type: 'error'
+                  layout: 'bottomRight'
+                  timeout: 5000
                 })
 
       main:
@@ -223,11 +219,15 @@ jQuery(() ->
                     noty({
                       text: "Invalid login or password"
                       type: 'error'
+                      layout: 'bottomRight'
+                      timeout: 5000
                     })
                   else
                     noty({
                       text: "Access denied"
                       type: 'error'
+                      layout: 'bottomRight'
+                      timeout: 5000
                     })
               )
 
