@@ -110,17 +110,22 @@
                     </li>
                     <li>
                         <div class="metadata-title">From</div>
-                        <div class="metadata-value">{{ selectedMessage.sender || "No sender" }}</div>
+                        <div v-if="selectedMessage.sender" class="metadata-value">{{ selectedMessage.sender }}</div>
+                        <div v-else class="metadata-value">No sender</div>
                     </li>
                     <li>
                         <div class="metadata-title">To</div>
-                        <div class="metadata-value">{{ (selectedMessage.recipients || []).join(", ") || "No receipients" }}</div>
+                        <div v-if="selectedMessage.recipients && selectedMessage.recipients.length" class="metadata-value">
+                            {{ (selectedMessage.recipients).join(", ") }}
+                        </div>
+                        <div v-else class="metadata-value">No receipients</div>
                     </li>
                     <li>
                         <div class="metadata-title">Subject</div>
-                        <div class="metadata-value" v-bind:class="{ 'no-value': !selectedMessage.subject }">
-                            {{ selectedMessage.subject || "No subject" }}
+                        <div v-if="selectedMessage.subject" class="metadata-value">
+                            {{ selectedMessage.subject }}
                         </div>
+                        <div v-else class="metadata-value no-value">No subject</div>
                     </li>
                     <li v-if="hasAttachments(selectedMessage)">
                         <div class="metadata-title attachments">Attachments</div>
