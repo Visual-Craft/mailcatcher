@@ -49,7 +49,7 @@
         <div class="folders">
             <div class="folders-wrapper">
                 <ul>
-                    <li v-for="folder in folders" track-by="id" class="noselect"
+                    <li v-for="folder in folders" v-bind:key="folder.id" class="noselect"
                         v-bind:class="{ 'selected': isFolderSelected(folder) }">
                         <span class="folder-line" v-on:click="toggleSelectedFolder(folder)">
                             <div class="folder-name-wrapper">
@@ -75,7 +75,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="message in filteredMessages" track-by="id"
+                    <tr v-for="message in filteredMessages" v-bind:key="message.id"
                         v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
                         v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)">
 
