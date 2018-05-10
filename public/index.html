@@ -88,7 +88,7 @@
                         <td v-if="message.subject">{{ message.subject }}</td>
                         <td v-else class="no-value">No subject</td>
 
-                        <td>{{ message.created_at | moment("D MMM Y HH:mm:ss") }}</td>
+                        <td>{{ message.created_at | moment(dateFormat) }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -106,7 +106,7 @@
                 <ul class="metadata">
                     <li>
                         <div class="metadata-title">Received</div>
-                        <div class="metadata-value">{{ selectedMessage.created_at | moment("D MMM Y HH:mm:ss") }}</div>
+                        <div class="metadata-value">{{ selectedMessage.created_at | moment(dateFormat) }}</div>
                     </li>
                     <li>
                         <div class="metadata-title">From</div>

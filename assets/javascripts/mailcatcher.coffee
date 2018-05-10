@@ -167,6 +167,7 @@ jQuery(() ->
           selectedPresentation: null
           resizer: null
           messageExpanded: null
+          dateFormat: 'D MMM Y HH:mm:ss'
 
         watch:
           'selectedFolderId': (value) ->
