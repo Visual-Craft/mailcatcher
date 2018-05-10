@@ -459,7 +459,8 @@ li.logout {
 }
 
 @media (min-width: 770px) {
-  #mc-app {
+  #mc-app,
+  .mc-app-container {
     display: flex;
     flex-direction: column;
     height: 100%;

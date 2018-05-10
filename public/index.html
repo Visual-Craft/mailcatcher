@@ -8,10 +8,11 @@
 </head>
 <body>
 <div id="mc-app" v-cloak>
-    <div :is="currentComponent"></div>
+    <div class="mc-app-container" :is="currentComponent"></div>
 </div>
 
 <script type="text/x-template" id="mc-login">
+    <div>
     <header>
         <h1>MailCatcher</h1>
         <nav class="app">
@@ -24,6 +25,7 @@
             </form>
         </nav>
     </header>
+    </div>
 </script>
 
 <script type="text/x-template" id="mc-main">
