@@ -118,6 +118,11 @@
               this.deleteSelectedMessage()
               false
 
+            key "f", =>
+              if this.messageExpanded != null
+                this.messageExpanded = !this.messageExpanded
+              false
+
             mouseEvents =
               mouseup: (e) =>
                 e.preventDefault()
