@@ -47,7 +47,7 @@
 
     <div class="wrapper">
         <div class="folders">
-            <div class="folders-wrapper">
+            <div class="folders-wrapper" v-bind:style="{ height: topBlockHeight + 'px' }">
                 <ul>
                     <li v-for="folder in folders" v-bind:key="folder.id" class="noselect"
                         v-bind:class="{ 'selected': isFolderSelected(folder) }">
@@ -64,7 +64,7 @@
         </div>
 
         <div class="emails">
-            <div id="messages">
+            <div id="messages" v-bind:style="{ height: topBlockHeight + 'px' }">
                 <table v-if="messages && messages.length">
                     <thead>
                     <tr>

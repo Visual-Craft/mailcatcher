@@ -1,51 +1,11 @@
-class Resizer
-  constructor: (resizer, onResize) ->
-    @resizer = resizer
-    @onResize = onResize
-    mouseEvents =
-      mouseup: (e) =>
-        e.preventDefault()
-        $(window).unbind(mouseEvents)
-      mousemove: (e) =>
-        e.preventDefault()
-        @resizeTo(e.clientY)
-
-    @resizer.mousedown((e) =>
-      e.preventDefault()
-      $(window).bind(mouseEvents)
-    )
-
-    @resizeToSaved()
-
-  resizeToSavedKey: "mailcatcherSeparatorHeight"
-
-  resizeTo: (height) ->
-    @onResize(height)
-    try
-      window.localStorage?.setItem(@resizeToSavedKey, height)
-    catch
-
-  resizeToSaved: ->
-    height = 0
-
-    try
-      height = parseInt(window.localStorage?.getItem(@resizeToSavedKey))
-    catch
-      height = -1
-
-    if isNaN(height) || height <= 0
-      @resizeTo(200)
+(() ->
+  Vue.filter('moment', (value, format) ->
+    if value
+      moment(value).format(format)
     else
-      @resizeTo(height)
+      ''
+  )
 
-Vue.filter('moment', (value, format) ->
-  if value
-    moment(value).format(format)
-  else
-    ''
-)
-
-jQuery(() ->
   new Vue(
     el: '#mc-app'
 
@@ -129,6 +89,13 @@ jQuery(() ->
           this.loadFolders()
           this.subscribe()
 
+          try
+            height = parseInt(window.localStorage?.getItem(this.resizerLsKey))
+
+            if !isNaN(height) and height > 0
+              this.topBlockHeight = height
+          catch
+
         mounted: () ->
           this.$nextTick(() ->
             key "up", =>
@@ -151,10 +118,20 @@ jQuery(() ->
               this.deleteSelectedMessage()
               false
 
-            this.resizer = new Resizer($("#resizer"), (height) =>
-              blockHeight = Math.max(height, 60) - $(".wrapper").offset().top / 2
-              $(".folders-wrapper").css(height: blockHeight)
-              $("#messages").css(height: blockHeight + 4)
+            mouseEvents =
+              mouseup: (e) =>
+                e.preventDefault()
+                $(window).unbind(mouseEvents)
+              mousemove: (e) =>
+                e.preventDefault()
+                this.topBlockHeight = Math.max(e.clientY - $(".wrapper").offset().top, 44)
+                try
+                  window.localStorage?.setItem(this.resizerLsKey, this.topBlockHeight)
+                catch
+
+            $("#resizer").mousedown((e) =>
+              e.preventDefault()
+              $(window).bind(mouseEvents)
             )
           )
 
@@ -167,6 +144,8 @@ jQuery(() ->
           selectedPresentation: null
           resizer: null
           messageExpanded: null
+          resizerLsKey: 'mailcatcherSeparatorHeight'
+          topBlockHeight: 200
           dateFormat: 'D MMM Y HH:mm:ss'
 
         watch:
@@ -528,4 +507,4 @@ jQuery(() ->
             else
               null
   )
-)
+)()
