@@ -131,7 +131,7 @@ module MailCatcher::Mail extend self
     filter = { :folder => { :$in => user.folders } }
 
     if user.unassigned_folders
-      { :$or => [filter, { :folder => { :$nin => MailCatcher.users.assigned_folders } }] }
+      filter = { :$or => [filter, { :folder => { :$nin => MailCatcher.users.assigned_folders } }] }
     end
 
     filter
