@@ -34,7 +34,7 @@
         <h1>MailCatcher</h1>
         <nav class="app">
             <ul>
-                <li class="search">
+                <li class="search" v-if="messages && messages.length">
                     <input type="search" placeholder="Search messages..." incremental="true" v-model="search" />
                 </li>
                 <li class="username" v-if="showLogoutButton() && userName()">
