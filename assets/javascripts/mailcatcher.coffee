@@ -59,6 +59,21 @@ loginComponent =
 mainComponent =
   template: '#mc-main'
 
+  data: () ->
+    folders: []
+    selectedFolderId: null
+    messages : []
+    selectedMessageId: null
+    search: ''
+    selectedPresentation: null
+    resizer: null
+    messageExpanded: null
+    resizerLsKey: 'mailcatcherSeparatorHeight'
+    topBlockHeight: 200
+    dateFormat: 'D MMM Y HH:mm:ss'
+    page: 1
+    perPage: 200
+
   created: () ->
     this.loadFolders()
     this.subscribe()
@@ -129,21 +144,6 @@ mainComponent =
         $(window).bind(mouseEvents)
       )
     )
-
-  data: () ->
-    folders: []
-    selectedFolderId: null
-    messages : []
-    selectedMessageId: null
-    search: ''
-    selectedPresentation: null
-    resizer: null
-    messageExpanded: null
-    resizerLsKey: 'mailcatcherSeparatorHeight'
-    topBlockHeight: 200
-    dateFormat: 'D MMM Y HH:mm:ss'
-    page: 1
-    perPage: 200
 
   watch:
     'selectedFolderId': (value) ->
@@ -560,6 +560,12 @@ mainComponent =
 new Vue(
   el: '#mc-app'
 
+  data:
+    currentComponent: null
+    currentUserName: null
+    noAuth: false
+    tokenStorageKey: null
+
   created: () ->
     this.checkAuth()
       .done((data) =>
@@ -571,12 +577,6 @@ new Vue(
         else
           this.toLogin()
       )
-
-  data:
-    currentComponent: null
-    currentUserName: null
-    noAuth: false
-    tokenStorageKey: null
 
   methods:
     toLogin: () ->
