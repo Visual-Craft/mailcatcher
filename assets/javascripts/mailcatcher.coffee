@@ -14,9 +14,9 @@ ls = {
     catch
 }
 
-Vue.filter('moment', (value, format) ->
+Vue.filter('moment', (value, format, inputFormat) ->
   if value
-    moment(value).format(format)
+    moment(value, inputFormat).format(format)
   else
     ''
 )
@@ -71,6 +71,7 @@ mainComponent =
     resizerLsKey: 'mailcatcherSeparatorHeight'
     topBlockHeight: 200
     dateFormat: 'D MMM Y HH:mm:ss'
+    inputDateFormat: 'YYYY-MM-DD HH:mm:ss'
     page: 1
     perPage: 200
 
