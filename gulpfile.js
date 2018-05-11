@@ -57,11 +57,22 @@ gulp.task('app-js', function() {
     ;
 });
 
-gulp.task('watch', ['css', 'vendor-js', 'app-js'], function() {
-    gulp.watch(paths.styles, ['css']);
-    gulp.watch(paths.appScripts, ['app-js']);
-    gulp.watch(paths.vendorScripts, ['vendor-js']);
+gulp.task('watch:css', function () {
+    gulp.watch(paths.styles, gulp.series('css'));
 });
 
-gulp.task('build', ['css', 'vendor-js', 'app-js']);
-gulp.task('default', ['build']);
+gulp.task('watch:app-js', function () {
+    gulp.watch(paths.appScripts, gulp.series('app-js'));
+});
+
+gulp.task('watch:vendor-js', function () {
+    gulp.watch(paths.vendorScripts, gulp.series('vendor-js'));
+});
+
+gulp.task('watch', gulp.series(
+    gulp.parallel('css', 'vendor-js', 'app-js'),
+    gulp.parallel('watch:css', 'watch:app-js', 'watch:vendor-js')
+));
+
+gulp.task('build', gulp.parallel('css', 'vendor-js', 'app-js'));
+gulp.task('default', gulp.task('build'));
