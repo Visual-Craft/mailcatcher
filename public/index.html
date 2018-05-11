@@ -96,10 +96,11 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="emails-nav" v-if="messages && messages.length">
-                    <a href="#" class="button" v-bind:disabled="!hasPrevPage" v-on:click.prevent="prevPage">&lt;</a>
-                    <a href="#" class="button" v-bind:disabled="!hasNextPage" v-on:click.prevent="nextPage">&gt;</a>
-                    <span>page: {{ page }} of {{ maxPages }} | messages: {{ firstMessageNumber }} to {{ lastMessageNumber }} of {{ messages.length }}</span>
+                <div class="messages-nav" v-if="messages && messages.length">
+                    <button v-bind:disabled="!hasPrevPage" v-on:click.prevent="prevPage">&lt;</button>
+                    <button v-bind:disabled="!hasNextPage" v-on:click.prevent="nextPage">&gt;</button>
+                    <span class="has-offset">page: {{ page }} of {{ maxPages }}</span>
+                    <span> messages: {{ firstMessageNumber }} to {{ lastMessageNumber }} of {{ messages.length }}</span>
                 </div>
             </div>
         </div>
