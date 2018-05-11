@@ -137,6 +137,21 @@
                 this.messageExpanded = !this.messageExpanded
               false
 
+            key "left", =>
+              this.prevPage()
+              false
+
+            key "right", =>
+              this.nextPage()
+              false
+
+            key "⌘+left, ctrl+left", =>
+              this.firstPage()
+              false
+
+            key "⌘+right, ctrl+right", =>
+              this.lastPage()
+              false
             mouseEvents =
               mouseup: (e) =>
                 e.preventDefault()
@@ -164,6 +179,8 @@
           resizerLsKey: 'mailcatcherSeparatorHeight'
           topBlockHeight: 200
           dateFormat: 'D MMM Y HH:mm:ss'
+          page: 1
+          perPage: 200
 
         watch:
           'selectedFolderId': (value) ->
@@ -175,6 +192,8 @@
             this.loadMessages()
 
           'messages': (messages, oldMessages) ->
+            this.page = 1
+
             if this.selectedMessageId != null
               if messages.length == 0
                 this.selectedMessageId = null
@@ -480,6 +499,32 @@
 
             return null
 
+          nextPage: () ->
+            if this.messages == null
+              return
+
+            if (this.page * this.perPage) + 1 < this.messages.length
+              this.page += 1
+
+          prevPage: () ->
+            if this.messages == null
+              return
+
+            if this.page > 1
+              this.page -= 1
+
+          firstPage: () ->
+            if this.messages == null
+              return
+
+            this.page = 1
+
+          lastPage: () ->
+            if this.messages == null
+              return
+
+            this.page = this.maxPages
+
         computed:
           presentations: () ->
             if this.selectedMessage == null
@@ -510,7 +555,9 @@
             )
 
           filteredMessages: () ->
-            _.filter(this.messages, this.filterMessage)
+            start = this.perPage * (this.page - 1)
+            _.filter(this.messages, this.filterMessage).slice(start, start + this.perPage)
+
 
           selectedFolder: () ->
             if this.selectedFolderId != null
@@ -523,5 +570,20 @@
               this.findMessageById(this.selectedMessageId)
             else
               null
+
+          maxPages: () ->
+            Math.ceil(this.messages.length / this.perPage)
+
+          firstMessageNumber: () ->
+            this.perPage * (this.page - 1) + 1
+
+          lastMessageNumber: () ->
+            Math.min(this.perPage * (this.page - 1) + this.perPage, this.messages.length)
+
+          hasPrevPage: () ->
+            this.page > 1
+
+          hasNextPage: () ->
+            this.messages.length > (this.page * this.perPage)
   )
 )()
