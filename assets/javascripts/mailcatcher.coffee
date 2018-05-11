@@ -1,5 +1,3 @@
-(() ->
-
 ls = {
   getItem: (key) ->
     result = null
@@ -599,4 +597,3 @@ new Vue(
           this.filteredMessages.length > (this.page * this.perPage)
 )
 
-)()
