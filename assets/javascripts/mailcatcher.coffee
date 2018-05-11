@@ -281,7 +281,7 @@
 
               secure = window.location.protocol is "https:"
               protocol = if secure then "wss" else "ws"
-              this.websocket = new WebSocket("#{protocol}://#{window.location.host}/ws/messages")
+              this.websocket = new ReconnectingWebSocket("#{protocol}://#{window.location.host}/ws/messages")
               this.websocket.onmessage = (event) =>
                 message = $.parseJSON(event.data)
 

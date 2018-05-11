@@ -22,7 +22,8 @@ const paths = {
         require.resolve('moment/min/moment-with-locales.js'),
         require.resolve('vue/dist/vue.min.js'),
         require.resolve('noty/js/noty/packaged/jquery.noty.packaged.js'),
-        require.resolve('js-cookie/src/js.cookie.js')
+        require.resolve('js-cookie/src/js.cookie.js'),
+        require.resolve('reconnectingwebsocket/reconnecting-websocket.js')
     ]
 };
 
