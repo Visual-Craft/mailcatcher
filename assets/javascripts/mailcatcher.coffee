@@ -1,4 +1,20 @@
 (() ->
+  ls = {
+    getItem: (key) ->
+      result = null
+
+      try
+        result = window.localStorage?.getItem(key)
+      catch
+
+      result
+
+    setItem: (key, value) ->
+      try
+        window.localStorage?.setItem(key, value)
+      catch
+  }
+
   Vue.filter('moment', (value, format) ->
     if value
       moment(value).format(format)
@@ -89,12 +105,10 @@
           this.loadFolders()
           this.subscribe()
 
-          try
-            height = parseInt(window.localStorage?.getItem(this.resizerLsKey))
+          height = parseInt(ls.getItem(this.resizerLsKey))
 
-            if !isNaN(height) and height > 0
-              this.topBlockHeight = height
-          catch
+          if !isNaN(height) and height > 0
+            this.topBlockHeight = height
 
         mounted: () ->
           this.$nextTick(() ->
@@ -130,9 +144,7 @@
               mousemove: (e) =>
                 e.preventDefault()
                 this.topBlockHeight = Math.max(e.clientY - $(".wrapper").offset().top, 44)
-                try
-                  window.localStorage?.setItem(this.resizerLsKey, this.topBlockHeight)
-                catch
+                ls.setItem(this.resizerLsKey, this.topBlockHeight)
 
             $("#resizer").mousedown((e) =>
               e.preventDefault()
