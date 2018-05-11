@@ -152,6 +152,11 @@
             key "⌘+right, ctrl+right", =>
               this.lastPage()
               false
+
+            key "s", =>
+              $(this.$el).find(".search input").focus()
+              false
+
             mouseEvents =
               mouseup: (e) =>
                 e.preventDefault()
