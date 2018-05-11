@@ -67,33 +67,42 @@
 
         <div class="emails">
             <div id="messages" v-bind:style="{ height: topBlockHeight + 'px' }">
-                <table v-if="messages && messages.length">
-                    <thead>
-                    <tr>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>Subject</th>
-                        <th>Received</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="message in filteredMessages" v-bind:key="message.id"
-                        v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
-                        v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)">
+                <div class="messages-table-container">
+                    <table v-if="messages && messages.length">
+                        <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Subject</th>
+                            <th>Received</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="message in filteredMessages" v-bind:key="message.id"
+                            v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
+                            v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)">
 
-                        <td v-if="message.sender">{{ message.sender }}</td>
-                        <td v-else class="no-value">No sender</td>
+                            <td v-if="message.sender">{{ message.sender }}</td>
+                            <td v-else class="no-value">No sender</td>
 
-                        <td v-if="message.recipients && message.recipients.length">{{ message.recipients.join(", ") }}</td>
-                        <td v-else class="no-value">No receipients</td>
+                            <td v-if="message.recipients && message.recipients.length">{{ message.recipients.join(", ") }}</td>
+                            <td v-else class="no-value">No receipients</td>
 
-                        <td v-if="message.subject">{{ message.subject }}</td>
-                        <td v-else class="no-value">No subject</td>
+                            <td v-if="message.subject">{{ message.subject }}</td>
+                            <td v-else class="no-value">No subject</td>
 
-                        <td>{{ message.created_at | moment(dateFormat) }}</td>
-                    </tr>
-                    </tbody>
-                </table>
+                            <td>{{ message.created_at | moment(dateFormat) }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="emails-nav">
+                    <ul class="pagination">
+                        <li><a href="">page 1</a></li>
+                        <li><a href="" class="active">page 2</a></li>
+                        <li><a href="">page 3</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

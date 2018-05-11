@@ -241,12 +241,11 @@ body {
     vertical-align: top;
     background: #eeeeee;
     border-top: 1px solid #fff;
-    padding: 15px 5px 15px;
+    padding: 0;
 
     #messages {
-      min-height: 2 * (1em + 0.5em);
-      overflow: auto;
-      max-height: 30vh;
+      position: relative;
+      padding-bottom: 38px;
 
       table {
         background: #fff;
@@ -293,6 +292,35 @@ body {
             padding: 3px;
           }
         }
+      }
+    }
+  }
+}
+
+.emails-nav {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 38px;
+  padding: 3px 0;
+  border-top: 1px solid #ccc;
+}
+
+.pagination {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+
+  li {
+    padding: 0 3px;
+
+    a {
+      text-decoration: none;
+      color: #000000;
+
+      &.active {
+        font-weight: 800;
       }
     }
   }
@@ -456,6 +484,11 @@ li.logout {
   font-style: italic;
 }
 
+.messages-table-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
 @media (min-width: 770px) {
   #mc-app,
   .mc-app-container {
@@ -480,10 +513,8 @@ li.logout {
     .emails {
       display: table-cell;
       width: calc(100% - #{$sidebar-width});
-      padding: 0 5px;
 
       #messages {
-        max-height: unset;
         width: 100%;
       }
     }
