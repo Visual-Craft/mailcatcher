@@ -78,7 +78,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="message in filteredMessages" v-bind:key="message.id"
+                        <tr v-for="message in filteredMessagesPaged" v-bind:key="message.id"
                             v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
                             v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)">
 
@@ -100,7 +100,7 @@
                     <button v-bind:disabled="!hasPrevPage" v-on:click.prevent="prevPage">&lt;</button>
                     <button v-bind:disabled="!hasNextPage" v-on:click.prevent="nextPage">&gt;</button>
                     <span class="has-offset">page: {{ page }} of {{ maxPages }}</span>
-                    <span> messages: {{ firstMessageNumber }} to {{ lastMessageNumber }} of {{ messages.length }}</span>
+                    <span> messages: {{ firstMessageNumber }} to {{ lastMessageNumber }} of {{ filteredMessages.length }}</span>
                 </div>
             </div>
         </div>

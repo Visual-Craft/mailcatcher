@@ -197,8 +197,6 @@
             this.loadMessages()
 
           'messages': (messages, oldMessages) ->
-            this.page = 1
-
             if this.selectedMessageId != null
               if messages.length == 0
                 this.selectedMessageId = null
@@ -250,6 +248,9 @@
 
             $(".folders-wrapper")[if value then 'slideUp' else 'slideDown'](300)
             $("#messages")[if value then 'slideUp' else 'slideDown'](300)
+
+          filteredMessages: () ->
+            this.page = 1
 
         methods:
           wrapAjax: (options) ->
@@ -560,9 +561,14 @@
             )
 
           filteredMessages: () ->
-            start = this.perPage * (this.page - 1)
-            _.filter(this.messages, this.filterMessage).slice(start, start + this.perPage)
+            if !this.messages or !this.messages.length
+              return []
 
+            _.filter(this.messages, this.filterMessage)
+
+          filteredMessagesPaged: () ->
+            start = this.perPage * (this.page - 1)
+            this.filteredMessages.slice(start, start + this.perPage)
 
           selectedFolder: () ->
             if this.selectedFolderId != null
@@ -577,18 +583,18 @@
               null
 
           maxPages: () ->
-            Math.ceil(this.messages.length / this.perPage)
+            Math.ceil(this.filteredMessages.length / this.perPage)
 
           firstMessageNumber: () ->
             this.perPage * (this.page - 1) + 1
 
           lastMessageNumber: () ->
-            Math.min(this.perPage * (this.page - 1) + this.perPage, this.messages.length)
+            Math.min(this.perPage * (this.page - 1) + this.perPage, this.filteredMessages.length)
 
           hasPrevPage: () ->
             this.page > 1
 
           hasNextPage: () ->
-            this.messages.length > (this.page * this.perPage)
+            this.filteredMessages.length > (this.page * this.perPage)
   )
 )()
