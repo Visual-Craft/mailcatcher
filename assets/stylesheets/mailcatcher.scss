@@ -68,7 +68,7 @@ body {
   background: #eeeeee;
   color: black;
   font-size: 12px;
-  font-family: Helvetica, sans-serif;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .button {
@@ -313,9 +313,12 @@ body {
 }
 
 button {
-  color: #000000;
+  color: #666666;
   padding: 1px 15px;
   margin: 3px;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid #cccccc;
 
   &:disabled {
     opacity: 0.4;
