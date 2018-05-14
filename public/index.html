@@ -43,7 +43,7 @@
                     <div style="padding: 11px;">{{ userName() }}</div>
                 </li>
                 <li class="logout">
-                    <div class="button" v-if="showLogoutButton()" v-on:click="logout()">Logout</div>
+                    <button v-if="showLogoutButton()" v-on:click="logout()">Logout</button>
                 </li>
             </ul>
         </nav>

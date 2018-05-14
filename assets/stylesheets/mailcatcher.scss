@@ -102,6 +102,7 @@ body {
   overflow: hidden;
   border-bottom: 1px solid #cccccc;
   flex-shrink: 0;
+  min-height: 43px;
 
   h1 {
     float: left;
@@ -310,18 +311,34 @@ body {
   .has-offset {
     margin: 0 20px;
   }
+
+  button {
+    margin: 3px;
+    padding: 6px 20px;
+  }
 }
 
 button {
   color: #666666;
-  padding: 1px 15px;
-  margin: 3px;
+  padding: 8px 15px;
   font-size: 12px;
   line-height: 1;
   border: 1px solid #cccccc;
+  background: linear-gradient(#f4f4f4, #ececec), #ececec;
+  border-radius: 4px;
+
+  &:hover:enabled, &:focus:enabled {
+    border-color: #999999;
+    border-bottom-color: #666666;
+    background: linear-gradient(#eee, #ddd), #ddd;
+    color: #333333;
+    text-decoration: none;
+    cursor: pointer;
+  }
 
   &:disabled {
     opacity: 0.4;
+    cursor: auto;
   }
 }
 
