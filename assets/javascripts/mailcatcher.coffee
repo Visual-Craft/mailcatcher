@@ -147,7 +147,7 @@ mainComponent =
     )
 
   watch:
-    'selectedFolderId': (value) ->
+    selectedFolderId: (value) ->
       if value != null and this.findFolderById(value) == null
         this.selectedFolderId = null
 
@@ -155,7 +155,7 @@ mainComponent =
       this.selectedMessageId = null
       this.loadMessages()
 
-    'messages': (messages, oldMessages) ->
+    messages: (messages, oldMessages) ->
       if this.selectedMessageId != null
         if messages.length == 0
           this.selectedMessageId = null
@@ -176,7 +176,7 @@ mainComponent =
           if this.selectedMessage != null
             this.scrollToRow(this.selectedMessage)
 
-    'selectedMessageId': (value) ->
+    selectedMessageId: (value) ->
       message = null
 
       if value != null
@@ -201,7 +201,7 @@ mainComponent =
         this.selectedPresentation = null
         this.messageExpanded = null
 
-    'messageExpanded': (value) ->
+    messageExpanded: (value) ->
       if value == null
         return
 
