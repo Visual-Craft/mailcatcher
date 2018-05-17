@@ -50,60 +50,58 @@
         </nav>
     </header>
 
-    <div class="wrapper">
-        <div class="folders">
-            <div class="folders-wrapper" v-bind:style="{ height: topBlockHeight + 'px' }">
-                <ul>
-                    <li v-for="folder in folders" v-bind:key="folder.id" class="noselect"
-                        v-bind:class="{ 'selected': isFolderSelected(folder) }">
-                        <span class="folder-line" v-on:click="toggleSelectedFolder(folder)">
-                            <div class="folder-name-wrapper">
-                                <span class="folder-name" v-bind:title="folder.name">{{ folder.name }}</span>
-                                <span class="folder-qty">[ {{ folder.count }} / {{ folder.new }} new ]</span>
-                            </div>
-                        </span>
-                        <span class="clear-folder" v-on:click="clearMessages(folder)">Clear</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="emails">
-            <div id="messages" v-bind:style="{ height: topBlockHeight + 'px' }">
-                <div class="messages-table-container">
-                    <table v-if="messages && messages.length">
-                        <thead>
-                        <tr>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Subject</th>
-                            <th>Received</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="message in filteredMessagesPaged" v-bind:key="message.id"
-                            v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
-                            v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)">
-
-                            <td v-if="message.sender">{{ message.sender }}</td>
-                            <td v-else class="no-value">No sender</td>
-
-                            <td v-if="message.recipients && message.recipients.length">{{ message.recipients.join(", ") }}</td>
-                            <td v-else class="no-value">No receipients</td>
-
-                            <td v-if="message.subject">{{ message.subject }}</td>
-                            <td v-else class="no-value">No subject</td>
-
-                            <td>{{ message.created_at | moment(dateFormat, inputDateFormat) }}</td>
-                        </tr>
-                        </tbody>
-                    </table>
+    <div class="sliding-panel">
+        <div class="wrapper" v-bind:style="{ height: topBlockHeight + 'px' }">
+            <div class="folders">
+                <div class="folders-wrapper">
+                    <ul>
+                        <li v-for="folder in folders" v-bind:key="folder.id" class="noselect"
+                            v-bind:class="{ 'selected': isFolderSelected(folder) }">
+                            <span class="folder-line" v-on:click="toggleSelectedFolder(folder)">
+                                <div class="folder-name-wrapper">
+                                    <span class="folder-name" v-bind:title="folder.name">{{ folder.name }}</span>
+                                    <span class="folder-qty">[ {{ folder.count }} / {{ folder.new }} new ]</span>
+                                </div>
+                            </span>
+                            <span class="clear-folder" v-on:click="clearMessages(folder)">Clear</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="messages-nav" v-if="messages && messages.length">
-                    <button class="button" v-bind:disabled="!hasPrevPage" v-on:click.prevent="prevPage">&lt;</button>
-                    <button class="button" v-bind:disabled="!hasNextPage" v-on:click.prevent="nextPage">&gt;</button>
-                    <span class="has-offset">page: {{ page }} of {{ maxPages }}</span>
-                    <span> messages: {{ firstMessageNumber }} to {{ lastMessageNumber }} of {{ filteredMessages.length }}</span>
+            </div>
+
+            <div class="emails">
+                <div id="messages">
+                    <div class="messages-table-container" v-if="messages && messages.length">
+                        <div class="messages-header">
+                            <div class="messages-cell">From</div>
+                            <div class="messages-cell">To</div>
+                            <div class="messages-cell">Subject</div>
+                            <div class="messages-cell">Received</div>
+                        </div>
+                        <div class="messages-body">
+                            <div class="messages-row" v-for="message in filteredMessagesPaged" v-bind:key="message.id"
+                                 v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
+                                 v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)"
+                            >
+                                <div class="messages-cell" v-if="message.sender">{{ message.sender }}</div>
+                                <div class="messages-cell" v-else class="no-value">No sender</div>
+
+                                <div class="messages-cell" v-if="message.recipients && message.recipients.length">{{ message.recipients.join(", ") }}</div>
+                                <div class="messages-cell" v-else class="no-value">No receipients</div>
+
+                                <div class="messages-cell" v-if="message.subject">{{ message.subject }}</div>
+                                <div class="messages-cell" v-else class="no-value">No subject</div>
+
+                                <div class="messages-cell" >{{ message.created_at | moment(dateFormat, inputDateFormat) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="messages-nav" v-if="messages && messages.length">
+                        <button class="button" v-bind:disabled="!hasPrevPage" v-on:click.prevent="prevPage">&lt;</button>
+                        <button class="button" v-bind:disabled="!hasNextPage" v-on:click.prevent="nextPage">&gt;</button>
+                        <span class="has-offset">page: {{ page }} of {{ maxPages }}</span>
+                        <span> messages: {{ firstMessageNumber }} to {{ lastMessageNumber }} of {{ filteredMessages.length }}</span>
+                    </div>
                 </div>
             </div>
         </div>

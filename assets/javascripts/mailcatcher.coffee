@@ -69,7 +69,7 @@ mainComponent =
     resizer: null
     messageExpanded: null
     resizerLsKey: 'mailcatcherSeparatorHeight'
-    topBlockHeight: 200
+    topBlockHeight: 500
     dateFormat: 'D MMM Y HH:mm:ss'
     inputDateFormat: 'YYYY-MM-DD HH:mm:ss'
     page: 1
@@ -137,7 +137,7 @@ mainComponent =
           $(window).unbind(mouseEvents)
         mousemove: (e) =>
           e.preventDefault()
-          this.topBlockHeight = Math.max(e.clientY - $(".wrapper").offset().top, 44)
+          this.topBlockHeight = Math.max(e.clientY - $(".wrapper").offset().top, 52)
           ls.setItem(this.resizerLsKey, this.topBlockHeight)
 
       $("#resizer").mousedown((e) =>
@@ -205,8 +205,7 @@ mainComponent =
       if value == null
         return
 
-      $(".folders-wrapper")[if value then 'slideUp' else 'slideDown'](300)
-      $("#messages")[if value then 'slideUp' else 'slideDown'](300)
+      $(".sliding-panel")[if value then 'slideUp' else 'slideDown'](300)
 
     filteredMessages: () ->
       this.page = 1
@@ -402,11 +401,11 @@ mainComponent =
       relativePosition = row.offset().top - $messages.offset().top
 
       if relativePosition < 0
-        $messages.scrollTop($messages.scrollTop() + relativePosition - 20)
+        $messages.scrollTop($messages.scrollTop() + relativePosition - 30)
       else
         overflow = relativePosition + row.height() - $messages.height()
         if overflow > 0
-          $messages.scrollTop($messages.scrollTop() + overflow + 20)
+          $messages.scrollTop($messages.scrollTop() + overflow + 30)
 
     selectPresentation: (presentation) ->
       this.selectedPresentation = presentation
