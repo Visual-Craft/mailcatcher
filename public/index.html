@@ -63,7 +63,7 @@
                                     <span class="folder-qty">[ {{ folder.count }} / {{ folder.new }} new ]</span>
                                 </div>
                             </span>
-                            <span class="clear-folder" v-on:click="clearMessages(folder)">Clear</span>
+                            <span class="clear-folder" v-on:click="clearMessages(folder)" title="Clear"></span>
                         </li>
                     </ul>
                 </div>
@@ -161,13 +161,13 @@
                     </li>
                     <li class="action toggle-height">
                         <a href="#" class="button"
-                           v-bind:class="{ 'expanded': messageExpanded }" v-on:click.prevent="toggleMessageExpanded"></a>
+                           v-bind:class="{ 'expanded': messageExpanded }" v-on:click.prevent="toggleMessageExpanded" title="Toggle message"></a>
                     </li>
                     <li class="action download">
-                        <a v-bind:href="downloadUrl(selectedMessage)" class="button" target="_blank">Download</a>
+                        <a v-bind:href="downloadUrl(selectedMessage)" class="button download" target="_blank" title="Download"></a>
                     </li>
                     <li class="action delete">
-                        <a href="#" class="button" v-on:click.prevent="deleteMessage(selectedMessage)">Delete</a>
+                        <a href="#" class="button delete" v-on:click.prevent="deleteMessage(selectedMessage)" title="Delete"></a>
                     </li>
                 </ul>
             </nav>
