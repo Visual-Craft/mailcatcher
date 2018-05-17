@@ -83,16 +83,16 @@
                                  v-bind:class="{ 'new': message.new, 'selected': isMessageSelected(message) }"
                                  v-bind:data-message-id="message.id" v-on:click="toggleSelectedMessage(message)"
                             >
-                                <div class="messages-cell" v-if="message.sender">{{ message.sender }}</div>
-                                <div class="messages-cell" v-else class="no-value">No sender</div>
+                                <div v-if="message.sender" class="messages-cell">{{ message.sender }}</div>
+                                <div v-else class="messages-cell no-value">No sender</div>
 
-                                <div class="messages-cell" v-if="message.recipients && message.recipients.length">{{ message.recipients.join(", ") }}</div>
-                                <div class="messages-cell" v-else class="no-value">No receipients</div>
+                                <div v-if="message.recipients && message.recipients.length" class="messages-cell">{{ message.recipients.join(", ") }}</div>
+                                <div v-else class="messages-cell no-value">No receipients</div>
 
-                                <div class="messages-cell" v-if="message.subject">{{ message.subject }}</div>
-                                <div class="messages-cell" v-else class="no-value">No subject</div>
+                                <div v-if="message.subject" class="messages-cell">{{ message.subject }}</div>
+                                <div v-else class="messages-cell no-value">No subject</div>
 
-                                <div class="messages-cell" >{{ message.created_at | moment(dateFormat, inputDateFormat) }}</div>
+                                <div class="messages-cell">{{ message.created_at | moment(dateFormat, inputDateFormat) }}</div>
                             </div>
                         </div>
                     </div>
