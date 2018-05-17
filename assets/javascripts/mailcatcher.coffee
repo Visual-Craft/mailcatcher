@@ -45,7 +45,7 @@ loginComponent =
           pass: this.password
         type: "POST"
         success: (token) =>
-          this.$parent.authenticate(this.username, token)
+          this.$emit('login', this.username, token)
         error: () ->
           noty({
             text: "Invalid login or password"
@@ -215,7 +215,7 @@ mainComponent =
       $.ajax(options)
         .fail((data) =>
           if data && (data.status == 403 || data.status == 401)
-            this.$parent.toLogin()
+            this.$emit('logout')
 
             if data.status == 401
               noty({
@@ -433,9 +433,6 @@ mainComponent =
     attachmentUrl: (message, attachment) ->
       "/api/messages/#{message.id}/attachment/#{attachment.id}/body"
 
-    logout: () ->
-      this.$parent.deAuthenticate()
-
     showLogoutButton: () ->
       !this.$parent.noAuth
 
@@ -593,11 +590,11 @@ new Vue(
         dataType: 'json'
         type: "GET"
 
-    authenticate: (username, token) ->
+    login: (username, token) ->
       Cookies.set(this.tokenStorageKey, token)
       this.toMain(username)
 
-    deAuthenticate: () ->
+    logout: () ->
       Cookies.set(this.tokenStorageKey, null)
       this.toLogin()
 

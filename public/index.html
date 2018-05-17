@@ -11,7 +11,12 @@
 </head>
 <body>
 <div id="mc-app" v-cloak>
-    <div class="mc-app-container" :is="currentComponent"></div>
+    <div
+        class="mc-app-container"
+        :is="currentComponent"
+        v-on:logout="logout"
+        v-on:login="login"
+    ></div>
 </div>
 
 <script type="text/x-template" id="mc-login">
@@ -44,7 +49,7 @@
                     <div>{{ userName() }}</div>
                 </li>
                 <li class="logout">
-                    <button class="button" v-if="showLogoutButton()" v-on:click="logout()">Logout</button>
+                    <button class="button" v-if="showLogoutButton()" v-on:click="$emit('logout')">Logout</button>
                 </li>
             </ul>
         </nav>
