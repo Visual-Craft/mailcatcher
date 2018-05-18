@@ -86,50 +86,48 @@ mainComponent =
 
   mounted: () ->
     this.$nextTick(() ->
-      key "up", =>
-        this.selectMessageRelative(-1)
-        false
-
-      key "down", =>
-        this.selectMessageRelative(+1)
-        false
-
-      key "⌘+up, ctrl+up, home", =>
-        this.selectMessageIndex(0)
-        false
-
-      key "⌘+down, ctrl+down, end", =>
-        this.selectMessageIndex(-1)
-        false
-
-      key "delete", =>
-        this.deleteSelectedMessage()
-        false
-
-      key "f", =>
-        if this.messageExpanded != null
-          this.messageExpanded = !this.messageExpanded
-        false
-
-      key "left", =>
-        this.prevPage()
-        false
-
-      key "right", =>
-        this.nextPage()
-        false
-
-      key "⌘+left, ctrl+left", =>
-        this.firstPage()
-        false
-
-      key "⌘+right, ctrl+right", =>
-        this.lastPage()
-        false
-
-      key "s", =>
-        $(this.$el).find(".search input").focus()
-        false
+      self = this
+      [
+        ["up", 100, () =>
+          this.selectMessageRelative(-1)
+        ]
+        ["down", 100, () =>
+          this.selectMessageRelative(+1)
+        ]
+        ["⌘+up, ctrl+up, home", 300, () =>
+          this.selectMessageIndex(0)
+        ]
+        ["⌘+down, ctrl+down, end", 300, () =>
+          this.selectMessageIndex(-1)
+        ]
+        ["delete", 300, () =>
+          this.deleteSelectedMessage()
+        ]
+        ["f", 400, () =>
+          if this.messageExpanded != null
+            this.messageExpanded = !this.messageExpanded
+        ]
+        ["left", 150, () =>
+          this.prevPage()
+        ]
+        ["right", 150, () =>
+          this.nextPage()
+        ]
+        ["⌘+left, ctrl+left", 300, () =>
+          this.firstPage()
+        ]
+        ["⌘+right, ctrl+right", 300, () =>
+          this.lastPage()
+        ]
+        ["s", 300, () =>
+          $(this.$el).find(".search input").focus()
+        ]
+      ].forEach((v) ->
+        key(v[0], _.throttle(() ->
+          v[2].call(self)
+          false
+        v[1], { leading: true }))
+      )
 
       mouseEvents =
         mouseup: (e) =>
