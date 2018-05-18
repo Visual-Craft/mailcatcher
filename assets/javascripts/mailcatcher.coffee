@@ -395,15 +395,15 @@ mainComponent =
       if row.length == 0
         return
 
-      $messages = $("#messages")
+      $messages = $("#messages .messages-body")
       relativePosition = row.offset().top - $messages.offset().top
 
       if relativePosition < 0
-        $messages.scrollTop($messages.scrollTop() + relativePosition - 30)
+        $messages.scrollTop($messages.scrollTop() + relativePosition)
       else
         overflow = relativePosition + row.height() - $messages.height()
         if overflow > 0
-          $messages.scrollTop($messages.scrollTop() + overflow + 30)
+          $messages.scrollTop($messages.scrollTop() + overflow)
 
     selectPresentation: (presentation) ->
       this.selectedPresentation = presentation
