@@ -147,7 +147,7 @@
                         <div class="metadata-title attachments">Attachments</div>
                         <div class="attachments">
                             <ul>
-                                <li v-for="(id, attachment) in selectedMessage.attachments">
+                                <li v-for="attachment in selectedMessage.attachments">
                                     <a v-bind:href="attachmentUrl(selectedMessage, attachment)" target="_blank">{{ attachment.filename }}</a>
                                 </li>
                             </ul>
