@@ -8,7 +8,7 @@ smtp:
 http:
   ip: '0.0.0.0'
   port: 1080
-password: 123
+password: '123'
 verbose: false
 token_secret: 'XAiOjJKv1QiLCJhb'
 users:
