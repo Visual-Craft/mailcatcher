@@ -12,6 +12,9 @@ ASSETS_CSS := $(ASSETS_DIR)/mailcatcher.css
 ASSETS_JS := $(ASSETS_DIR)/mailcatcher.js
 ASSETS_VENDOR_JS := $(ASSETS_DIR)/vendor.js
 
+VENDOR_DIR := $(DIR)/vendor
+GEM_META := $(DIR)/Gemfile $(DIR)/Gemfile.lock $(DIR)/mailcatcher.gemspec
+
 
 .PHONY: assets
 assets: $(ASSETS_CSS) $(ASSETS_JS) $(ASSETS_VENDOR_JS)
@@ -54,6 +57,10 @@ $(NODE_MODULES): $(NODE_MODULES_META)
 	touch $@
 
 
+$(VENDOR_DIR): $(GEM_META)
+	cd $(DIR) && bundle install --path vendor
+	touch $(VENDOR_DIR)
+
 .PHONY: run
-run: $(ASSETS_CSS) $(ASSETS_JS) $(ASSETS_VENDOR_JS)
+run: $(VENDOR_DIR) $(ASSETS_CSS) $(ASSETS_JS) $(ASSETS_VENDOR_JS)
 	cd $(DIR) && bundle exec bin/mailcatcher -c sample_config.yml
